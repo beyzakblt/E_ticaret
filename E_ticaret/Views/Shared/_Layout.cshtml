@@ -1,0 +1,203 @@
+﻿@using E_ticaret.Models
+@inject EticaretContext _context
+@{
+    var ayar = _context.SiteAyarlaris.FirstOrDefault();
+}
+
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ayar?.SiteAdi</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+
+    <style>
+        :root {
+            --main-gradient: linear-gradient(135deg, #FF3CAC 0%, #784BA0 50%, #2B86C5 100%);
+            --glass: rgba(255, 255, 255, 0.85);
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background: #fdfdfd;
+        }
+
+        /* Cam Efekti Navbar */
+        .navbar-custom {
+            background: var(--glass);
+            backdrop-filter: blur(15px);
+            border-bottom: 1px solid rgba(255,255,255,0.3);
+            padding: 1rem 0;
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.05);
+        }
+
+        .navbar-brand {
+            font-weight: 800;
+            font-size: 1.7rem;
+            background: var(--main-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        /* Metin Logo Tasarımı */
+        .logo-text-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .logo-icon {
+            background: var(--main-gradient);
+            color: white;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 12px;
+            font-size: 1.2rem;
+            box-shadow: 0 4px 15px rgba(120, 75, 160, 0.3);
+        }
+
+        .logo-name {
+            font-weight: 800;
+            letter-spacing: -1px;
+            font-size: 1.6rem;
+            background: var(--main-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-transform: uppercase;
+        }
+
+        /* WhatsApp Sabit Buton */
+        .whatsapp-chat {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            z-index: 9999;
+            background: #25d366;
+            color: white;
+            width: 65px;
+            height: 65px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 35px;
+            box-shadow: 0 10px 25px rgba(37, 211, 102, 0.4);
+            transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            text-decoration: none;
+        }
+
+            .whatsapp-chat:hover {
+                transform: scale(1.15) rotate(10deg);
+                color: white;
+            }
+
+        /* Modern Kartlar */
+        .home-card {
+            border: none;
+            border-radius: 25px;
+            background: white;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.05);
+            transition: 0.3s;
+            overflow: hidden;
+        }
+
+            .home-card:hover {
+                transform: translateY(-12px);
+                box-shadow: 0 20px 45px rgba(0,0,0,0.1);
+            }
+
+        .gradient-btn {
+            background: var(--main-gradient);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 50px;
+            font-weight: 600;
+            transition: 0.3s;
+        }
+
+            .gradient-btn:hover {
+                opacity: 0.9;
+                transform: translateY(-2px);
+                color: white;
+            }
+
+        footer {
+            background: #0b1120;
+            color: rgba(255,255,255,0.7);
+            padding: 80px 0 30px;
+        }
+    </style>
+</head>
+<body>
+
+    <nav class="navbar navbar-expand-lg navbar-custom sticky-top">
+        <div class="container">
+            <a class="navbar-brand" href="/">@ayar?.SiteAdi</a>
+            <a class="navbar-brand d-flex align-items-center" href="/">
+                @if (ayar != null && !string.IsNullOrEmpty(ayar.Logo))
+                {
+                    <img src="@ayar.Logo" alt="Logo" height="45">
+                }
+                else
+                {
+                    <div class="logo-text-wrapper">
+                        <span class="logo-icon"><i class="bi bi-bag-heart-fill"></i></span>
+                        <span class="logo-name">@(ayar?.SiteAdi ?? "ETİCARET")</span>
+                    </div>
+                }
+            </a>
+            <div class="ms-auto d-flex align-items-center">
+                @if (!string.IsNullOrEmpty(ayar?.Tel))
+                {
+                    <a href="tel:@ayar.Tel" class="btn d-none d-md-inline-block me-3 fw-bold text-dark">
+                        <i class="bi bi-headset me-2 text-primary"></i> @ayar.Tel
+                    </a>
+                }
+                <a href="/Admin/Login" class="gradient-btn shadow-sm">Giriş</a>
+            </div>
+        </div>
+    </nav>
+
+    @if (!string.IsNullOrEmpty(ayar?.Whatsapp))
+    {
+        <a href="https://wa.me/@ayar.Whatsapp" class="whatsapp-chat" target="_blank">
+            <i class="bi bi-whatsapp"></i>
+        </a>
+    }
+
+    <div class="content">
+        @RenderBody()
+    </div>
+
+    <footer>
+        <div class="container text-center">
+            <h3 class="text-white fw-bold mb-4">@ayar?.SiteAdi</h3>
+            <div class="social-links mb-5">
+                @if (!string.IsNullOrEmpty(ayar?.Instagram))
+                {
+                    <a href="@ayar.Instagram" class="mx-3 text-white fs-2"><i class="bi bi-instagram"></i></a>
+                }
+                @if (!string.IsNullOrEmpty(ayar?.Facebook))
+                {
+                    <a href="@ayar.Facebook" class="mx-3 text-white fs-2"><i class="bi bi-facebook"></i></a>
+                }
+                @if (!string.IsNullOrEmpty(ayar?.Youtube))
+                {
+                    <a href="@ayar.Youtube" class="mx-3 text-white fs-2"><i class="bi bi-youtube"></i></a>
+                }
+            </div>
+            <p class="small opacity-50">&copy; 2026 @ayar?.SiteAdi. Tüm Hakları Saklıdır.</p>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

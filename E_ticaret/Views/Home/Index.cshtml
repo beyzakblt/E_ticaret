@@ -1,0 +1,38 @@
+﻿@{
+    ViewData["Title"] = "Anasayfa";
+}
+
+<div class="container py-5">
+    <div class="row align-items-center mb-5 py-5">
+        <div class="col-lg-6">
+            <h1 class="display-3 fw-800 mb-4" style="line-height: 1.1;">Tarzını <span class="text-primary">Yansıt</span>, Kaliteyi Seç.</h1>
+            <p class="lead text-muted mb-5">En yeni trendler ve özel koleksiyonlar şimdi mağazamızda sizi bekliyor.</p>
+            <div class="d-flex gap-3">
+                <button class="gradient-btn px-5 py-3 fs-5">Alışverişe Başla</button>
+            </div>
+        </div>
+        <div class="col-lg-6">
+            <img src="https://picsum.photos/800/600?shopping" class="img-fluid rounded-5 shadow-lg" alt="Banner">
+        </div>
+    </div>
+
+    <h2 class="fw-bold mb-4 mt-5">Popüler Ürünler</h2>
+    <div class="row g-4">
+        @for (int i = 0; i < 4; i++)
+        {
+            <div class="col-md-3">
+                <div class="card home-card h-100 p-3">
+                    <img src="https://picsum.photos/400/500?product=@i" class="card-img-top rounded-4 mb-3" alt="Ürün">
+                    <div class="card-body p-0">
+                        <h5 class="fw-bold mb-1">Premium Ürün #@(i + 1)</h5>
+                        <p class="text-muted small">Özel Tasarım Serisi</p>
+                        <div class="d-flex justify-content-between align-items-center mt-3">
+                            <span class="fs-4 fw-bold text-dark">850₺</span>
+                            <button class="btn btn-outline-primary rounded-pill"><i class="bi bi-cart-plus"></i></button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</div>

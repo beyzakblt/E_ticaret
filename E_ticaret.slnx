@@ -1,0 +1,7 @@
+<Solution>
+  <Folder Name="/.github/" />
+  <Folder Name="/.github/workflows/">
+    <File Path="dotnet-build.yml" />
+  </Folder>
+  <Project Path="E_ticaret/E_ticaret.csproj" />
+</Solution>

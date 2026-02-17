@@ -1,0 +1,169 @@
+﻿@model E_ticaret.Models.SiteAyarlari
+
+@{
+    ViewData["Title"] = "Site Ayarları";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="row">
+    <div class="col-12 mb-4">
+        <h4 class="fw-bold"><i class="bi bi-gear-fill me-2"></i>Site Genel Yapılandırması</h4>
+        <p class="text-muted">Sitenin iletişim bilgilerini, harita konumunu ve sosyal medya hesaplarını buradan yönetebilirsiniz.</p>
+    </div>
+</div>
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success border-0 shadow-sm mb-4">
+        <i class="bi bi-check-circle me-2"></i> @TempData["Success"]
+    </div>
+}
+
+<form action="/Admin/Site_Ayarlari" method="post" enctype="multipart/form-data">
+    @* ID her zaman 1 olduğu için manuel 1 verdik veya modelden aldık *@
+    <input type="hidden" name="Id" value="@Model?.Id" />
+
+    <div class="row g-4">
+        <div class="col-lg-8">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-white py-3">
+                    <h6 class="mb-0 fw-bold text-dark"><i class="bi bi-geo-alt me-2 text-primary"></i>Lokasyon ve Harita (Iframe)</h6>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Google Harita Kodu</label>
+                        <textarea name="Harita" class="form-control" id="mapInput" rows="4" placeholder="<iframe>...</iframe> yapıştırın">@Model?.Harita</textarea>
+                    </div>
+
+                    <div class="rounded border bg-light p-2" style="min-height: 300px;">
+                        <div id="mapPreview" class="d-flex align-items-center justify-content-center h-100 text-muted">
+                            @if (!string.IsNullOrEmpty(Model?.Harita))
+                            {
+                                @Html.Raw(Model.Harita)
+                            }
+                            else
+                            {
+                                <span><i class="bi bi-map me-2"></i>Harita kodu yapıştırıldığında burada görünecek</span>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card shadow-sm">
+                <div class="card-header bg-white py-3">
+                    <h6 class="mb-0 fw-bold text-dark"><i class="bi bi-info-circle me-2 text-primary"></i>Kurumsal Bilgiler</h6>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Site Başlığı</label>
+                            <input type="text" name="Site_Adi" class="form-control" value="@Model?.SiteAdi" />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Mevcut Logo</label>
+                            <div class="d-flex align-items-center border rounded p-1 bg-light">
+                                <img src="@Model?.Logo" alt="Logo" style="height: 30px;" class="me-2 shadow-sm">
+                                <input type="file" name="LogoFile" class="form-control form-control-sm border-0 bg-transparent" />
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">E-Posta Adresi</label>
+                            <input type="email" name="Mail" class="form-control" value="@Model?.Mail" />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Telefon</label>
+                            <input type="text" name="Tel" class="form-control" value="@Model?.Tel" />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">WhatsApp</label>
+                            <input type="text" name="Whatsapp" class="form-control" value="@Model?.Whatsapp" />
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">Fiziksel Adres</label>
+                            <textarea name="Adres" class="form-control" rows="2">@Model?.Adres</textarea>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="card shadow-sm mb-4 bg-primary text-white text-center p-4">
+                <i class="bi bi-cloud-upload display-4 mb-3"></i>
+                <h5>Değişiklikleri Yayınla</h5>
+                <p class="small opacity-75">Ayarları veritabanına kaydetmek için aşağıdaki butonu kullanın.</p>
+                <button type="submit" class="btn btn-light btn-lg w-100 fw-bold shadow-sm">
+                    <i class="bi bi-save me-2"></i>Güncelle
+                </button>
+            </div>
+
+            <div class="card shadow-sm">
+                <div class="card-header bg-white py-3">
+                    <h6 class="mb-0 fw-bold text-dark"><i class="bi bi-share me-2 text-primary"></i>Sosyal Medya</h6>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label class="form-label d-flex align-items-center"><i class="bi bi-facebook me-2 text-primary"></i> Facebook</label>
+                        <input type="text" name="Facebook" class="form-control form-control-sm" value="@Model?.Facebook" />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label d-flex align-items-center"><i class="bi bi-instagram me-2 text-danger"></i> Instagram</label>
+                        <input type="text" name="Instagram" class="form-control form-control-sm" value="@Model?.Instagram" />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label d-flex align-items-center"><i class="bi bi-twitter me-2 text-info"></i> Twitter</label>
+                        <input type="text" name="Twitter" class="form-control form-control-sm" value="@Model?.Twitter" />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label d-flex align-items-center"><i class="bi bi-tiktok me-2 text-dark"></i> Tiktok</label>
+                        <input type="text" name="Tiktok" class="form-control form-control-sm" value="@Model?.Tiktok" />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label d-flex align-items-center"><i class="bi bi-linkedin me-2 text-primary"></i> Linkedin</label>
+                        <input type="text" name="Linkedin" class="form-control form-control-sm" value="@Model?.Linkedin" />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label d-flex align-items-center"><i class="bi bi-youtube me-2 text-danger"></i> Youtube</label>
+                        <input type="text" name="Youtube" class="form-control form-control-sm" value="@Model?.Youtube" />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label d-flex align-items-center"><i class="bi bi-pinterest me-2 text-danger"></i> Pinterest</label>
+                        <input type="text" name="Pinteret" class="form-control form-control-sm" value="@Model?.Pinteret" />
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+
+@section Scripts {
+    <script>
+        const mapInput = document.getElementById('mapInput');
+        const mapPreview = document.getElementById('mapPreview');
+
+        // Sayfa yüklendiğinde iframe boyutunu ayarla
+        window.onload = function() {
+            const iframe = mapPreview.querySelector('iframe');
+            if (iframe) {
+                iframe.setAttribute('width', '100%');
+                iframe.setAttribute('height', '300');
+            }
+        };
+
+        mapInput.addEventListener('input', function () {
+            const code = this.value.trim();
+            if (code.startsWith('<iframe')) {
+                mapPreview.innerHTML = code;
+                const iframe = mapPreview.querySelector('iframe');
+                if (iframe) {
+                    iframe.setAttribute('width', '100%');
+                    iframe.setAttribute('height', '300');
+                    iframe.style.border = "0";
+                }
+            } else if (code === "") {
+                mapPreview.innerHTML = '<span><i class="bi bi-map me-2"></i>Harita kodu bekleniyor...</span>';
+            }
+        });
+    </script>
+}
