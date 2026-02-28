@@ -1,0 +1,153 @@
+﻿
+@{
+    ViewData["Title"] = "Sozlesmeler";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+@model E_ticaret.Models.Sozlesmeler
+
+<div class="container-fluid py-4">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h3 class="fw-bold">Kurumsal Sözleşme Yönetimi</h3>
+            <div class="btn-group mt-3 shadow-sm">
+                <a href="/Admin/Sozlesmeler/1" class="btn @(ViewBag.AktifTip == 1 ? "btn-primary" : "btn-outline-primary")">Gizlilik Sözleşmesi</a>
+                <a href="/Admin/Sozlesmeler/2" class="btn @(ViewBag.AktifTip == 2 ? "btn-primary" : "btn-outline-primary")">İade Koşulları</a>
+                <a href="/Admin/Sozlesmeler/3" class="btn @(ViewBag.AktifTip == 3 ? "btn-primary" : "btn-outline-primary")">Kullanım Şartları</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="card border-0 shadow-sm rounded-4">
+        <div class="card-body p-4">
+            <form id="sozlesmeForm" action="/Admin/SozlesmeKaydet" method="post">
+                <input type="hidden" name="SozlesmeTipi" value="@ViewBag.AktifTip" />
+
+                <div class="mb-3">
+                    <label>Sözleşme Başlığı</label>
+                    @* Başlık inputuna id="Baslik" ekledik *@
+                    <input type="text" id="Baslik" name="Baslik" value="@Model.Baslik" class="form-control" />
+                </div>
+
+                <div class="mb-3">
+                    <label>İçerik</label>
+                    <textarea id="editor" name="Icerik">@Model.Icerik</textarea>
+                </div>
+
+                <button type="submit" class="btn btn-primary">Kaydet</button>
+            </form>
+            <div class="card border-0 shadow-sm rounded-4 mt-4">
+                <div class="card-header bg-white border-0 py-3">
+                    <h5 class="fw-bold mb-0"><i class="bi bi-journal-text me-2 text-primary"></i>Sistemde Kayıtlı Sözleşmeler</h5>
+                </div>
+                <div class="table-responsive p-3">
+                    <table class="table table-hover align-middle">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Sözleşme Tipi</th>
+                                <th>Başlık</th>
+                                <th>Son Güncelleme</th>
+                                <th class="text-center">İşlem</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @* Bu listeyi görebilmemiz için Controller'dan bir liste göndermemiz lazım.
+                   Şimdilik ViewBag üzerinden hızlıca çözelim.
+                *@
+                            @foreach (var s in (List<E_ticaret.Models.Sozlesmeler>)ViewBag.TumSozlesmeler)
+                            {
+                                <tr>
+                                    <td>
+                                        @if (s.SozlesmeTipi == 1)
+                                        {
+                                            <span class="badge bg-info">Gizlilik</span>
+                                        }
+                                        else if (s.SozlesmeTipi == 2)
+                                        {
+
+                                            <span class="badge bg-warning text-dark">İade</span>
+                                        }
+                                        else if (s.SozlesmeTipi == 3)
+                                        {
+
+                                            <span class="badge bg-secondary">Kullanım</span>
+                                        }
+                                    </td>
+                                    <td class="fw-bold">@s.Baslik</td>
+                                    <td class="small text-muted">@s.GuncellenmeTarihi?.ToString("dd.MM.yyyy HH:mm")</td>
+                                    <td class="text-center">
+                                        <a href="/Admin/Sozlesmeler/@s.SozlesmeTipi" class="btn btn-sm btn-outline-primary rounded-pill">
+                                            <i class="bi bi-pencil-square"></i> Düzenle
+                                        </a>
+                                    </td>
+                                    <td class="text-center">
+                                        <div class="btn-group">
+                                            <a href="/Admin/Sozlesmeler/@s.SozlesmeTipi" class="btn btn-sm btn-outline-primary">
+                                                <i class="bi bi-pencil"></i>
+                                            </a>
+
+                                            <a href="/Admin/SozlesmeSil/@s.SozlesmeTipi"
+                                               class="btn btn-sm btn-outline-danger"
+                                               onclick="return confirm('Bu sözleşmeyi tamamen silmek istediğine emin misin?')">
+                                                <i class="bi bi-trash"></i>
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<!-- Place the following <script> and <textarea> tags your HTML's <body> -->
+<!-- Place the following <script> and <textarea> tags your HTML's <body> -->
+<script>
+    tinymce.init({
+      selector: 'textarea',
+      plugins: [
+        // Core editing features
+        'anchor', 'autolink', 'charmap', 'codesample', 'emoticons', 'link', 'lists', 'media', 'searchreplace', 'table', 'visualblocks', 'wordcount',
+        // Your account includes a free trial of TinyMCE premium features
+        // Try the most popular premium features until Mar 11, 2026:
+        'checklist', 'mediaembed', 'casechange', 'formatpainter', 'pageembed', 'a11ychecker', 'tinymcespellchecker', 'permanentpen', 'powerpaste', 'advtable', 'advcode', 'advtemplate', 'ai', 'uploadcare', 'mentions', 'tinycomments', 'tableofcontents', 'footnotes', 'mergetags', 'autocorrect', 'typography', 'inlinecss', 'markdown','importword', 'exportword', 'exportpdf'
+      ],
+      toolbar: 'undo redo | blocks fontfamily fontsize | bold italic underline strikethrough | link media table mergetags | addcomment showcomments | spellcheckdialog a11ycheck typography uploadcare | align lineheight | checklist numlist bullist indent outdent | emoticons charmap | removeformat',
+      tinycomments_mode: 'embedded',
+      tinycomments_author: 'Author name',
+      mergetags_list: [
+        { value: 'First.Name', title: 'First Name' },
+        { value: 'Email', title: 'Email' },
+      ],
+      ai_request: (request, respondWith) => respondWith.string(() => Promise.reject('See docs to implement AI Assistant')),
+      uploadcare_public_key: '54e4e235d968021d9a41',
+    });
+
+</script>
+<script>
+    // 2. ADIM: JavaScript kodunu form ve editör ID'lerinle eşledik
+    document.getElementById('sozlesmeForm').addEventListener('submit', function (e) {
+
+        // Alert her türlü gelsin
+        alert("Sözleşme başarıyla kaydedildi!");
+
+        // 3. ADIM: Temizleme işlemi
+        setTimeout(() => {
+            // Başlığı temizle
+            document.getElementById('Baslik').value = "";
+
+            // Editörü temizle (Senin ID'n 'editor' olduğu için düzelttim)
+            if (tinymce.get('editor')) {
+                tinymce.get('editor').setContent('');
+            }
+        }, 100);
+    });
+</script>
+
+
+

@@ -1,0 +1,247 @@
+﻿@model E_ticaret.Modellerim.UrunView
+
+@{
+    ViewData["Title"] = "Ürün Yönetimi";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="container-fluid py-4">
+    <div class="row mb-4 align-items-center">
+        <div class="col-md-6">
+            <h3 class="fw-bold m-0 text-dark">Ürün Kataloğu</h3>
+            <p class="text-muted small">Tüm ürünlerinizi buradan yönetebilir ve stok durumlarını takip edebilirsiniz.</p>
+        </div>
+        <div class="col-md-6 text-end">
+            <button class="btn btn-primary rounded-pill px-4 shadow-sm" data-bs-toggle="modal" data-bs-target="#urunModal" onclick="yeniUrunEkle()">
+                <i class="bi bi-plus-circle me-2"></i>Yeni Ürün Tanımla
+            </button>
+        </div>
+    </div>
+
+    <div class="card border-0 shadow-sm rounded-4">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="bg-light text-muted small uppercase">
+                        <tr>
+                            <th class="ps-4">Ürün Bilgisi</th>
+                            <th>Kategori / Marka</th>
+                            <th>Fiyat / İndirim</th>
+                            <th>Stok Adedi</th>
+                            <th class="text-end pe-4">İşlemler</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var u in Model.UrunListesi)
+                        {
+                            <tr>
+                                <td class="ps-4">
+                                    <div class="d-flex align-items-center">
+                                        <div class="bg-light rounded-3 p-2 me-3 text-primary"><i class="bi bi-box-seam fs-4"></i></div>
+                                        <span class="fw-bold text-dark">@u.UrunAdi</span>
+                                    </div>
+                                </td>
+                                <td>
+                                    @* ViewBag kullanarak isimleri çekiyoruz *@
+                                    <span class="badge bg-primary-subtle text-primary border">@(ViewBag.KategoriAdlari.ContainsKey(u.Id) ? ViewBag.KategoriAdlari[u.Id] : "Yok")</span>
+                                    <span class="badge bg-secondary-subtle text-secondary border">@(ViewBag.MarkaAdlari.ContainsKey(u.Id) ? ViewBag.MarkaAdlari[u.Id] : "Yok")</span>
+                                </td>
+                                <td>
+                                    <div class="fw-bold">₺@u.Fiyat</div>
+                                    @if (u.IndirimliFiyat > 0)
+                                    {
+                                        <div class="small text-danger text-decoration-line-through">₺@u.IndirimliFiyat</div>
+                                    }
+                                </td>
+                                <td><span class="fw-bold">@u.Adet</span> <small class="text-muted">Adet</small></td>
+                                <td class="text-end pe-4">
+                                    <button class="btn btn-sm btn-outline-warning border-0 rounded-circle"
+                                            onclick="duzenleAc('@u.Id', '@u.UrunAdi', '@u.Adet', '@u.Fiyat', '@(u.IndirimliFiyat ?? 0)', '@u.KategoriId', '@u.MarkaId', '@u.Aciklama')">
+                                        <i class="bi bi-pencil-square fs-5"></i>
+                                    </button>
+                                    <a href="/Admin/UrunSil/@u.Id" class="btn btn-sm btn-outline-danger border-0 rounded-circle" onclick="return confirm('Silmek istediğine emin misin?')">
+                                        <i class="bi bi-trash3 fs-5"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="urunModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg rounded-4">
+            <form action="/Admin/UrunKaydet" method="post" enctype="multipart/form-data">
+                <div class="modal-header border-bottom-0 pt-4 px-4">
+                    <h5 class="modal-title fw-bold" id="modalLabel">Ürün Detayları</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body px-4 pb-4">
+                    <input type="hidden" name="Id" id="u_id" value="0" />
+
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <label class="form-label small fw-bold">Ürün Adı</label>
+                            <input type="text" name="Urun_Adi" id="u_ad" class="form-control rounded-3" required />
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label small fw-bold">Kategori</label>
+                            <select name="Kategori_Id" id="u_kat" class="form-select rounded-3">
+                                @foreach (var kat in Model.KategoriListesi)
+                                {
+                                    <option value="@kat.Id">@kat.KategoriAdi</option>
+                                }
+                            </select>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label small fw-bold">Marka</label>
+                            <select name="Marka_Id" id="u_marka" class="form-select rounded-3">
+                                @foreach (var marka in Model.MarkaListesi)
+                                {
+                                    @* Marka tablosundaki kolon ismine göre burayı güncelledim *@
+                                    <option value="@marka.Id">@marka.MarkaAd</option>
+                                }
+                            </select>
+                        </div>
+
+                        <div class="col-md-4">
+                            <label class="form-label small fw-bold">Satış Fiyatı (₺)</label>
+                            <input type="number" name="Fiyat" id="u_fiyat" class="form-control rounded-3" step="0.01" />
+                        </div>
+
+                        <div class="col-md-4">
+                            <label class="form-label small fw-bold">İndirimli Fiyat (₺)</label>
+                            <input type="number" name="Indirimli_Fiyat" id="u_indirim" class="form-control rounded-3" step="0.01" />
+                        </div>
+
+                        <div class="col-md-4">
+                            <label class="form-label small fw-bold">Stok Adedi</label>
+                            <input type="number" name="Adet" id="u_stok" class="form-control rounded-3" />
+                        </div>
+
+                        <div class="col-12">
+                            <label class="form-label small fw-bold">Ürün Açıklaması</label>
+                            <textarea name="Aciklama" id="u_ack" class="form-control rounded-3" rows="3"></textarea>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label small fw-bold">Kayıtlı Fotoğraflar</label>
+                            <div id="mevcutFotolar" class="d-flex flex-wrap gap-2 p-2 border rounded bg-light" style="min-height: 80px;">
+                            </div>
+                        </div>
+
+                        <div class="col-12">
+                            <div class="bg-primary-subtle p-3 rounded-3">
+                                <label class="form-label small fw-bold text-primary mb-2">Ürün Görselleri (Çoklu Seçim)</label>
+                                <input type="file" name="UrunFotograflari" class="form-control bg-white" multiple />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer border-top-0 px-4 pb-4">
+                    <button type="submit" class="btn btn-primary rounded-pill px-5 shadow">Kaydet</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<script>
+    /**
+     * Ürün Düzenleme Modalını Açar ve Verileri Doldurur
+     */
+    function duzenleAc(id, ad, adet, fiyat, indirim, katid, markaid, ack) {
+        // 1. Formdaki temel alanları doldur
+        document.getElementById('u_id').value = id;
+        document.getElementById('u_ad').value = ad;
+        document.getElementById('u_stok').value = adet;
+        document.getElementById('u_fiyat').value = fiyat.toString().replace(',', '.');
+        document.getElementById('u_indirim').value = indirim.toString().replace(',', '.');
+        document.getElementById('u_kat').value = katid;
+        document.getElementById('u_marka').value = markaid;
+        document.getElementById('u_ack').value = ack;
+
+        // 2. Fotoğrafları Getirme İşlemi
+        const fotoAlani = document.getElementById('mevcutFotolar');
+        if (fotoAlani) {
+            fotoAlani.innerHTML = '<div class="col-12 text-center"><small class="text-muted">Fotoğraflar yükleniyor...</small></div>';
+
+            fetch('/Admin/GetUrunFotolari/' + id)
+                .then(res => res.json())
+                .then(data => {
+                    fotoAlani.innerHTML = "";
+
+                    if (data.length === 0) {
+                        fotoAlani.innerHTML = '<div class="col-12"><small class="text-muted">Kayıtlı fotoğraf yok.</small></div>';
+                    } else {
+                        // Backend'den gelen veride 'id' ve 'ad' (yol) var
+                        data.forEach(item => {
+                            fotoAlani.innerHTML += `
+                                <div id="foto-kap-${item.id}" class="position-relative border rounded shadow-sm overflow-hidden" style="width:80px; height:80px;">
+                                    <img src="${item.ad}" style="width:100%; height:100%; object-fit:cover;">
+                                    <button type="button" onclick="fotoSil(${item.id})"
+                                            class="btn btn-danger btn-sm position-absolute top-0 end-0 p-0 shadow-sm"
+                                            style="width:22px; height:22px; font-size:14px; line-height:1; border-radius: 0 0 0 5px;">
+                                        &times;
+                                    </button>
+                                </div>`;
+                        });
+                    }
+                })
+                .catch(err => {
+                    fotoAlani.innerHTML = '<div class="col-12"><small class="text-danger">Yükleme hatası!</small></div>';
+                });
+        }
+
+        document.getElementById('modalLabel').innerText = "Ürünü Güncelle: " + ad;
+        var myModal = new bootstrap.Modal(document.getElementById('urunModal'));
+        myModal.show();
+    }
+
+    /**
+     * Fotoğrafı Veritabanından ve Klasörden Silen Fonksiyon
+     */
+    function fotoSil(fotoId) {
+        if (confirm("Bu fotoğrafı kalıcı olarak silmek istediğine emin misin?")) {
+            const formData = new FormData();
+            formData.append('fotoId', fotoId);
+
+            fetch('/Admin/FotoSil', {
+                method: 'POST',
+                body: formData
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    // Silinen fotoğrafı anında ekrandan kaldır
+                    const element = document.getElementById('foto-kap-' + fotoId);
+                    if(element) element.remove();
+                } else {
+                    alert("Fotoğraf silinemedi!");
+                }
+            })
+            .catch(err => alert("Bir hata oluştu!"));
+        }
+    }
+
+    /**
+     * Yeni Ürün Ekleme İçin Formu Sıfırlar
+     */
+    function yeniUrunEkle() {
+        document.getElementById('u_id').value = "0";
+        document.getElementById('u_ad').value = "";
+        document.getElementById('u_stok').value = "";
+        document.getElementById('u_fiyat').value = "";
+        document.getElementById('u_indirim').value = "";
+        document.getElementById('u_ack').value = "";
+
+        const fotoAlani = document.getElementById('mevcutFotolar');
+        if (fotoAlani) fotoAlani.innerHTML = '<div class="col-12"><small class="text-muted italic">Yeni ürün için fotoğraf yükleyebilirsiniz.</small></div>';
+
+        document.getElementById('modalLabel').innerText = "Yeni Ürün Tanımla";
+    }
+</script>

@@ -1,0 +1,83 @@
+﻿@model IEnumerable<E_ticaret.Models.Siparisler>
+@inject EticaretContext _db
+@{
+    ViewData["Title"] = "Siparişlerim";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container py-5">
+    <div class="row">
+        <div class="col-lg-10 mx-auto">
+            <div class="card border-0 shadow-lg rounded-4 p-4">
+                <h3 class="fw-bold mb-4"><i class="bi bi-box-seam me-2 text-primary"></i>Sipariş Geçmişim</h3>
+
+                @if (!Model.Any())
+                {
+                    <div class="text-center py-5">
+                        <i class="bi bi-bag-x display-1 text-muted"></i>
+                        <p class="mt-3 fs-5 text-muted">Henüz hiç sipariş vermemişsiniz.</p>
+                        <a href="/" class="gradient-btn px-4 py-2 text-decoration-none">Alışverişe Başla</a>
+                    </div>
+                }
+                else
+                {
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Sipariş Tarihi</th>
+                                    <th>Ürün Bilgisi</th>
+                                    <th>Adet</th>
+                                    <th>Toplam Tutar</th>
+                                    <th>Durum</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var item in Model)
+                                {
+                                    var urun = _db.Urunlers.FirstOrDefault(u => u.Id == item.UrunId);
+                                    <tr>
+                                        <td>
+                                            <div class="fw-bold">@item.SiparisTarihi?.ToString("dd MMMM yyyy")</div>
+                                            <small class="text-muted">@item.SiparisTarihi?.ToString("HH:mm")</small>
+                                        </td>
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                <div class="fw-bold">@(urun?.UrunAdi ?? "Bilinmeyen Ürün")</div>
+                                            </div>
+                                        </td>
+                                        <td>@item.Adet Adet</td>
+                                        <td class="fw-bold text-primary">@item.ToplamFiyat?.ToString("C2")</td>
+                                        <td>
+                                            @* Duruma göre farklı renklerde badge gösteriyoruz *@
+                                            @if (item.Durum == "Sipariş Alındı")
+                                            {
+                                                <span class="badge bg-info text-dark rounded-pill px-3">Sipariş Alındı</span>
+                                            }
+                                            else if (item.Durum == "Hazırlanıyor")
+                                            {
+                                                <span class="badge bg-warning text-dark rounded-pill px-3">Hazırlanıyor</span>
+                                            }
+                                            else if (item.Durum == "Kargoya Verildi")
+                                            {
+                                                <span class="badge bg-primary rounded-pill px-3">Kargoda</span>
+                                            }
+                                            else if (item.Durum == "Teslim Edildi")
+                                            {
+                                                <span class="badge bg-success rounded-pill px-3">Teslim Edildi</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="badge bg-secondary rounded-pill px-3">@item.Durum</span>
+                                            }
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,24 @@
+﻿@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-4 text-center">
+            <div class="card border-0 shadow-lg rounded-4 p-4">
+                <h4 class="fw-bold">E-Posta Onayı</h4>
+                <p class="text-muted small">@ViewBag.Email adresine gönderilen kodu girin.</p>
+                @if (ViewBag.Error != null)
+                {
+                    <div class="alert alert-danger">@ViewBag.Error</div>
+                }
+                <form action="/Account/Verify" method="post">
+                    <div class="mb-4">
+                        <input type="text" name="kod" class="form-control form-control-lg text-center fw-bold" maxlength="6" required autofocus>
+                    </div>
+                    <button type="submit" class="btn btn-success w-100 rounded-pill py-2">Onayla ve Kaydı Tamamla</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,100 @@
+﻿
+
+@model List<E_ticaret.Models.Slider>
+@{
+    ViewData["Title"] = "Slider Yönetimi";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="container-fluid py-4">
+    <div class="card border-0 shadow-sm rounded-4 mb-4">
+        <div class="card-header bg-white border-0 py-3">
+            <h5 class="fw-bold mb-0"><i class="bi bi-plus-circle me-2 text-primary"></i>Yeni Slider Ekle</h5>
+        </div>
+        <div class="card-body">
+            <form action="/Admin/SliderKaydet" method="post" enctype="multipart/form-data">
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <label class="form-label fw-bold small">Slider Resmi</label>
+                        <input type="file" name="ResimDosyasi" class="form-control" required accept="image/*" />
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label fw-bold small">Slider Başlığı (Opsiyonel)</label>
+                        <input type="text" name="Baslik" class="form-control" placeholder="Örn: Yeni Sezon Ürünleri" />
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label fw-bold small">Sıra</label>
+                        <input type="number" name="Sira" class="form-control" value="0" />
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label fw-bold small">Durum</label>
+                        <select name="Aktif" class="form-select">
+                            <option value="true">Aktif</option>
+                            <option value="false">Pasif</option>
+                        </select>
+                    </div>
+                    <div class="col-md-10">
+                        <label class="form-label fw-bold small">Yönlendirilecek Link (URL)</label>
+                        <input type="text" name="Link" class="form-control" placeholder="https://..." />
+                    </div>
+                    <div class="col-md-2 d-flex align-items-end">
+                        <button type="submit" class="btn btn-primary w-100 shadow-sm">Kaydet</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="card border-0 shadow-sm rounded-4">
+        <div class="card-header bg-white border-0 py-3">
+            <h5 class="fw-bold mb-0"><i class="bi bi-images me-2 text-primary"></i>Mevcut Sliderlar</h5>
+        </div>
+        <div class="table-responsive p-3">
+            <table class="table table-hover align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th>Resim</th>
+                        <th>Başlık</th>
+                        <th>Sıra</th>
+                        <th>Durum</th>
+                        <th class="text-center">İşlemler</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model)
+                    {
+                        <tr>
+                            <td>
+                                <img src="@item.ResimYolu" style="width:120px; height:60px; object-fit:cover;" class="rounded shadow-sm" />
+                            </td>
+                            <td><span class="fw-bold">@item.Baslik</span></td>
+                            <td><span class="badge bg-secondary">@item.Sira</span></td>
+                            <td>
+                                @if (item.Aktif)
+                                {
+                                    <span class="badge bg-success">Aktif</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-danger">Pasif</span>
+                                }
+                            </td>
+                            <td class="text-center">
+                                <a href="/Admin/SliderSil/@item.Id" class="btn btn-outline-danger btn-sm" onclick="return confirm('Bu sliderı silmek istediğine emin misin?')">
+                                    <i class="bi bi-trash"></i> Sil
+                                </a>
+                            </td>
+                        </tr>
+                    }
+                    @if (!Model.Any())
+                    {
+                        <tr>
+                            <td colspan="5" class="text-center text-muted py-4">Henüz slider eklenmemiş.</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+

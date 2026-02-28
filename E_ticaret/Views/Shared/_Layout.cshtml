@@ -2,6 +2,19 @@
 @inject EticaretContext _context
 @{
     var ayar = _context.SiteAyarlaris.FirstOrDefault();
+    var userName = Context.Session.GetString("UserName");
+    var userIdString = Context.Session.GetString("UserId");
+
+    // Sayfa ilk yüklendiğinde sepet sayısını toplam ürün adedi olarak çekiyoruz
+    int sepetAdet = 0;
+    if (!string.IsNullOrEmpty(userIdString))
+    {
+        int uId = int.Parse(userIdString);
+        // Sum kullanarak toplam adet miktarını alıyoruz (Örn: 2 ekmek + 1 süt = 3)
+        sepetAdet = _context.Siparislers
+                    .Where(x => x.KullaniciId == uId && x.Durum == "Sepette")
+                    .Sum(x => (int?)x.Adet) ?? 0;
+    }
 }
 
 <!DOCTYPE html>
@@ -26,53 +39,43 @@
             background: #fdfdfd;
         }
 
-        /* Cam Efekti Navbar */
         .navbar-custom {
             background: var(--glass);
             backdrop-filter: blur(15px);
             border-bottom: 1px solid rgba(255,255,255,0.3);
-            padding: 1rem 0;
+            padding: 0.8rem 0;
             box-shadow: 0 4px 30px rgba(0, 0, 0, 0.05);
         }
 
-        .navbar-brand {
-            font-weight: 800;
-            font-size: 1.7rem;
-            background: var(--main-gradient);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-        /* Metin Logo Tasarımı */
         .logo-text-wrapper {
             display: flex;
             align-items: center;
             gap: 10px;
+            text-decoration: none;
         }
 
         .logo-icon {
             background: var(--main-gradient);
             color: white;
-            width: 40px;
-            height: 40px;
+            width: 38px;
+            height: 38px;
             display: flex;
             align-items: center;
             justify-content: center;
-            border-radius: 12px;
-            font-size: 1.2rem;
-            box-shadow: 0 4px 15px rgba(120, 75, 160, 0.3);
+            border-radius: 10px;
+            font-size: 1.1rem;
         }
 
         .logo-name {
             font-weight: 800;
             letter-spacing: -1px;
-            font-size: 1.6rem;
+            font-size: 1.5rem;
             background: var(--main-gradient);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             text-transform: uppercase;
         }
 
-        /* WhatsApp Sabit Buton */
         .whatsapp-chat {
             position: fixed;
             bottom: 30px;
@@ -80,58 +83,46 @@
             z-index: 9999;
             background: #25d366;
             color: white;
-            width: 65px;
-            height: 65px;
+            width: 60px;
+            height: 60px;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 35px;
+            font-size: 30px;
             box-shadow: 0 10px 25px rgba(37, 211, 102, 0.4);
-            transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            transition: 0.3s;
             text-decoration: none;
         }
 
             .whatsapp-chat:hover {
-                transform: scale(1.15) rotate(10deg);
+                transform: scale(1.1) rotate(5deg);
                 color: white;
-            }
-
-        /* Modern Kartlar */
-        .home-card {
-            border: none;
-            border-radius: 25px;
-            background: white;
-            box-shadow: 0 15px 35px rgba(0,0,0,0.05);
-            transition: 0.3s;
-            overflow: hidden;
-        }
-
-            .home-card:hover {
-                transform: translateY(-12px);
-                box-shadow: 0 20px 45px rgba(0,0,0,0.1);
             }
 
         .gradient-btn {
             background: var(--main-gradient);
             color: white;
             border: none;
-            padding: 12px 30px;
+            padding: 10px 25px;
             border-radius: 50px;
             font-weight: 600;
             transition: 0.3s;
+            text-decoration: none;
+            display: inline-block;
         }
 
             .gradient-btn:hover {
                 opacity: 0.9;
-                transform: translateY(-2px);
+                transform: translateY(-1px);
                 color: white;
             }
 
         footer {
             background: #0b1120;
             color: rgba(255,255,255,0.7);
-            padding: 80px 0 30px;
+            padding: 60px 0 30px;
+            margin-top: 50px;
         }
     </style>
 </head>
@@ -139,28 +130,66 @@
 
     <nav class="navbar navbar-expand-lg navbar-custom sticky-top">
         <div class="container">
-            <a class="navbar-brand" href="/">@ayar?.SiteAdi</a>
-            <a class="navbar-brand d-flex align-items-center" href="/">
-                @if (ayar != null && !string.IsNullOrEmpty(ayar.Logo))
-                {
-                    <img src="@ayar.Logo" alt="Logo" height="45">
-                }
-                else
-                {
-                    <div class="logo-text-wrapper">
-                        <span class="logo-icon"><i class="bi bi-bag-heart-fill"></i></span>
-                        <span class="logo-name">@(ayar?.SiteAdi ?? "ETİCARET")</span>
-                    </div>
-                }
+            <a class="navbar-brand p-0" href="/">
+                <div class="logo-text-wrapper">
+                    <span class="logo-icon"><i class="bi bi-bag-heart-fill"></i></span>
+                    <span class="logo-name">@(ayar?.SiteAdi ?? "BEYZA STORE")</span>
+                </div>
             </a>
-            <div class="ms-auto d-flex align-items-center">
-                @if (!string.IsNullOrEmpty(ayar?.Tel))
-                {
-                    <a href="tel:@ayar.Tel" class="btn d-none d-md-inline-block me-3 fw-bold text-dark">
-                        <i class="bi bi-headset me-2 text-primary"></i> @ayar.Tel
-                    </a>
-                }
-                <a href="/Admin/Login" class="gradient-btn shadow-sm">Giriş</a>
+
+            <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <div class="ms-auto d-flex align-items-center gap-3 mt-3 mt-lg-0">
+
+                    @if (!string.IsNullOrEmpty(ayar?.Tel))
+                    {
+                        <a href="tel:@ayar.Tel" class="btn d-none d-xl-inline-block fw-bold text-dark border-0">
+                            <i class="bi bi-headset me-2 text-primary"></i> @ayar.Tel
+                        </a>
+                    }
+
+                    @if (userIdString != null)
+                    {
+                        <a href="/Home/Index" class="btn btn-link text-dark text-decoration-none fw-semibold p-0">
+                            <i class="bi bi-grid me-1"></i> Ürünler
+                        </a>
+
+                        <a href="/Cart/Index" class="btn btn-outline-dark rounded-pill px-3 position-relative">
+                            <i class="bi bi-cart3"></i>
+                            <span id="cartCount" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                                @sepetAdet
+                            </span>
+                        </a>
+
+                        <div class="dropdown">
+                            <button class="btn btn-light rounded-pill dropdown-toggle fw-bold shadow-sm px-3" type="button" data-bs-toggle="dropdown">
+                                <i class="bi bi-person-circle me-1"></i> @userName
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end shadow-lg border-0 mt-2">
+                                @* PROFİL VE SİPARİŞLER AYRILDI *@
+                                <li>
+                                    <a class="dropdown-item py-2" href="/Account/Profile">
+                                        <i class="bi bi-person-gear me-2 text-primary"></i>Profil Bilgilerim
+                                    </a>
+                                </li>
+                                <li><a class="dropdown-item py-2" href="/Account/Orders"><i class="bi bi-bag-check me-2 text-success"></i>Siparişlerim</a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li>
+                                    <a class="dropdown-item py-2 text-danger" href="/Account/Logout">
+                                        <i class="bi bi-box-arrow-right me-2"></i>Çıkış Yap
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+                    }
+                    else
+                    {
+                        <a href="/Account/Login" class="gradient-btn shadow-sm">Giriş Yap</a>
+                    }
+                </div>
             </div>
         </div>
     </nav>
@@ -172,31 +201,32 @@
         </a>
     }
 
-    <div class="content">
+    <main role="main">
         @RenderBody()
-    </div>
+    </main>
 
     <footer>
         <div class="container text-center">
-            <h3 class="text-white fw-bold mb-4">@ayar?.SiteAdi</h3>
-            <div class="social-links mb-5">
+            <h4 class="text-white fw-bold mb-4">@ayar?.SiteAdi</h4>
+            <div class="social-links mb-4">
                 @if (!string.IsNullOrEmpty(ayar?.Instagram))
                 {
-                    <a href="@ayar.Instagram" class="mx-3 text-white fs-2"><i class="bi bi-instagram"></i></a>
+                    <a href="@ayar.Instagram" class="mx-2 text-white fs-3"><i class="bi bi-instagram"></i></a>
                 }
                 @if (!string.IsNullOrEmpty(ayar?.Facebook))
                 {
-                    <a href="@ayar.Facebook" class="mx-3 text-white fs-2"><i class="bi bi-facebook"></i></a>
+                    <a href="@ayar.Facebook" class="mx-2 text-white fs-3"><i class="bi bi-facebook"></i></a>
                 }
                 @if (!string.IsNullOrEmpty(ayar?.Youtube))
                 {
-                    <a href="@ayar.Youtube" class="mx-3 text-white fs-2"><i class="bi bi-youtube"></i></a>
+                    <a href="@ayar.Youtube" class="mx-2 text-white fs-3"><i class="bi bi-youtube"></i></a>
                 }
             </div>
             <p class="small opacity-50">&copy; 2026 @ayar?.SiteAdi. Tüm Hakları Saklıdır.</p>
         </div>
     </footer>
 
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     @await RenderSectionAsync("Scripts", required: false)
 </body>

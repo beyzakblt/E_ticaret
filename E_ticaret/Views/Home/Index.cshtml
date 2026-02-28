@@ -1,34 +1,44 @@
-﻿@{
+﻿@model IEnumerable<E_ticaret.Models.Urunler>
+@inject EticaretContext _db
+@{
     ViewData["Title"] = "Anasayfa";
+    var userId = Context.Session.GetString("UserId");
 }
 
 <div class="container py-5">
-    <div class="row align-items-center mb-5 py-5">
-        <div class="col-lg-6">
-            <h1 class="display-3 fw-800 mb-4" style="line-height: 1.1;">Tarzını <span class="text-primary">Yansıt</span>, Kaliteyi Seç.</h1>
-            <p class="lead text-muted mb-5">En yeni trendler ve özel koleksiyonlar şimdi mağazamızda sizi bekliyor.</p>
-            <div class="d-flex gap-3">
-                <button class="gradient-btn px-5 py-3 fs-5">Alışverişe Başla</button>
-            </div>
-        </div>
-        <div class="col-lg-6">
-            <img src="https://picsum.photos/800/600?shopping" class="img-fluid rounded-5 shadow-lg" alt="Banner">
-        </div>
-    </div>
-
-    <h2 class="fw-bold mb-4 mt-5">Popüler Ürünler</h2>
+    <h2 class="fw-bold mb-4">Ürünlerimiz</h2>
     <div class="row g-4">
-        @for (int i = 0; i < 4; i++)
+        @foreach (var item in Model)
         {
+            // Bu ürünün o an kullanıcının sepetinde kaç adet olduğunu bulalım
+            int sepetAdet = 0;
+            if (userId != null)
+            {
+                sepetAdet = _db.Siparislers.FirstOrDefault(x => x.KullaniciId == int.Parse(userId) && x.UrunId == item.Id && x.Durum == "Sepette")?.Adet ?? 0;
+            }
+
             <div class="col-md-3">
-                <div class="card home-card h-100 p-3">
-                    <img src="https://picsum.photos/400/500?product=@i" class="card-img-top rounded-4 mb-3" alt="Ürün">
+                <div class="card h-100 p-3 shadow-sm border-0 rounded-4">
+                    <img src="https://picsum.photos/400/500?product=@item.Id" class="card-img-top rounded-4 mb-3" alt="@item.UrunAdi">
                     <div class="card-body p-0">
-                        <h5 class="fw-bold mb-1">Premium Ürün #@(i + 1)</h5>
-                        <p class="text-muted small">Özel Tasarım Serisi</p>
+                        <h5 class="fw-bold">@item.UrunAdi</h5>
+                        <p class="text-muted small">@item.Aciklama</p>
+
                         <div class="d-flex justify-content-between align-items-center mt-3">
-                            <span class="fs-4 fw-bold text-dark">850₺</span>
-                            <button class="btn btn-outline-primary rounded-pill"><i class="bi bi-cart-plus"></i></button>
+                            <span class="fs-5 fw-bold text-primary">@item.Fiyat.ToString("C2")</span>
+
+                            @* ARTI - EKSİ BUTONLARI *@
+                            <div class="d-flex align-items-center bg-light rounded-pill p-1">
+                                <button class="btn btn-sm btn-white rounded-circle shadow-sm" onclick="sepetGuncelle(@item.Id, -1)">
+                                    <i class="bi bi-dash"></i>
+                                </button>
+
+                                <span id="adet-@item.Id" class="mx-2 fw-bold">@sepetAdet</span>
+
+                                <button class="btn btn-sm btn-primary rounded-circle shadow-sm" onclick="sepetGuncelle(@item.Id, 1)">
+                                    <i class="bi bi-plus"></i>
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -36,3 +46,25 @@
         }
     </div>
 </div>
+
+@section Scripts {
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        function sepetGuncelle(urunId, degisim) {
+            $.post("/Cart/UpdateQuantity", { id: urunId, change: degisim }, function (response) {
+                if (response.success) {
+                    // 1. Karttaki yerel adet sayısını güncelle
+                    $("#adet-" + urunId).text(response.yeniUrunAdet);
+
+                    // 2. Navbardaki toplam sepet sayısını güncelle
+                    $("#cartCount").text(response.toplamSepetSayisi);
+
+                    // Efekt verelim
+                    $("#cartCount").fadeOut(100).fadeIn(100);
+                } else {
+                    window.location.href = "/Account/Login";
+                }
+            });
+        }
+    </script>
+}

@@ -1,0 +1,71 @@
+﻿@model E_ticaret.Models.Kullanicilar
+@{
+    ViewData["Title"] = "Profilim";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-lg rounded-4 overflow-hidden">
+                <div class="gradient-btn p-4 text-white text-center">
+                    <h3 class="mb-0 fw-bold">Profil Bilgilerim</h3>
+                    <p class="small mb-0 opacity-75">Teslimat ve iletişim bilgilerinizi buradan güncelleyebilirsiniz.</p>
+                </div>
+
+                <div class="card-body p-4 p-md-5">
+                    @if (TempData["Message"] != null)
+                    {
+                        <div class="alert alert-success alert-dismissible fade show rounded-pill" role="alert">
+                            <i class="bi bi-check-circle-fill me-2"></i> @TempData["Message"]
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    }
+
+                    <form asp-action="UpdateProfile" method="post">
+                        <div class="row g-4">
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">Ad Soyad</label>
+                                <input asp-for="AdSoyad" type="text" class="form-control rounded-pill border-2" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">E-posta (Değiştirilemez)</label>
+                                <input asp-for="Email" type="email" class="form-control rounded-pill border-2 bg-light" readonly>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">Telefon</label>
+                                <input asp-for="Telefon" type="tel" class="form-control rounded-pill border-2" placeholder="05xx xxx xx xx">
+                            </div>
+
+                            <hr class="my-4 text-muted">
+                            <h5 class="fw-bold"><i class="bi bi-geo-alt me-2"></i>Teslimat Adresi</h5>
+
+                            <div class="col-12">
+                                <label class="form-label fw-semibold">Açık Adres</label>
+                                <textarea asp-for="Adres" class="form-control rounded-4 border-2" rows="3" placeholder="Mahalle, sokak, kapı no..."></textarea>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label fw-semibold">Şehir</label>
+                                <input asp-for="Sehir" type="text" class="form-control rounded-pill border-2">
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label fw-semibold">İlçe</label>
+                                <input asp-for="Ilce" type="text" class="form-control rounded-pill border-2">
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label fw-semibold">Posta Kodu</label>
+                                <input asp-for="PostaKodu" type="text" class="form-control rounded-pill border-2">
+                            </div>
+
+                            <div class="col-12 mt-5">
+                                <button type="submit" class="gradient-btn w-100 py-3 rounded-pill shadow border-0 fw-bold">
+                                    <i class="bi bi-save me-2"></i> Değişiklikleri Kaydet
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,38 @@
+﻿@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card border-0 shadow-lg rounded-4 p-4">
+                <h3 class="fw-bold text-center mb-4">Üye Ol</h3>
+                @if (ViewBag.Error != null)
+                {
+                    <div class="alert alert-danger">@ViewBag.Error</div>
+                }
+                <form action="/Account/Register" method="post">
+                    <div class="mb-3">
+                        <label class="fw-bold">Ad Soyad</label>
+                        <input type="text" name="AdSoyad" class="form-control rounded-pill" required />
+                    </div>
+                    <div class="mb-3">
+                        <label class="fw-bold">E-Posta</label>
+                        <input type="email" name="Email" class="form-control rounded-pill" required />
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="fw-bold">Şifre</label>
+                            <input type="password" name="Sifre" class="form-control rounded-pill" required />
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="fw-bold">Şifre Tekrar</label>
+                            <input type="password" name="SifreTekrar" class="form-control rounded-pill" required />
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100 rounded-pill py-2">Onay Kodu Gönder</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

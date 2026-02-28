@@ -1,0 +1,122 @@
+﻿@model IEnumerable<E_ticaret.Models.ApiAyarlari>
+
+@{
+    ViewData["Title"] = "API Yönetimi";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="container-fluid py-4">
+    <div class="row">
+        <div class="col-lg-4">
+            <div class="card shadow-sm border-0 mb-4">
+                <div class="card-header bg-white py-3">
+                    <h6 class="m-0 fw-bold text-primary" id="formTitle"><i class="bi bi-plus-circle me-2"></i>Yeni API Ekle</h6>
+                </div>
+                <div class="card-body">
+                    <form asp-action="Api_Ayarlari" asp-controller="Admin" method="post">
+                        <input type="hidden" name="id" id="apiId" value="0" />
+
+                        <div class="mb-3">
+                            <label class="form-label small fw-bold text-muted">API Tanımı (Ad)</label>
+                            <input type="text" name="ad" id="apiAd" class="form-control border-light-subtle shadow-sm" placeholder="Örn: Google Maps, Stripe" required />
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label small fw-bold text-muted">API Anahtarı (Kod)</label>
+                            <textarea name="kod" id="apiKod" class="form-control border-light-subtle shadow-sm" rows="5" placeholder="API Kodunu buraya yapıştırın" required></textarea>
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary fw-bold shadow-sm py-2">
+                                <i class="bi bi-save me-2"></i>Kaydet
+                            </button>
+                            <button type="button" onclick="formSifirla()" class="btn btn-light btn-sm text-muted">Temizle</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-8">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-white py-3">
+                    <h6 class="m-0 fw-bold text-dark"><i class="bi bi-list-stars me-2 text-primary"></i>Kayıtlı API Listesi</h6>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle">
+                            <thead class="table-light">
+                                <tr>
+                                    <th style="width: 50px;">ID</th>
+                                    <th>API Adı</th>
+                                    <th>Kod/Anahtar</th>
+                                    <th class="text-end">İşlemler</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @if (Model != null && Model.Any())
+                                {
+                                    foreach (var item in Model)
+                                    {
+                                        <tr>
+                                            <td class="text-muted fw-bold">#@item.Id</td>
+                                            <td><span class="badge bg-info-subtle text-info px-3 py-2 fs-6">@item.Ad</span></td>
+                                            <td>
+                                                <code class="text-truncate d-inline-block" style="max-width: 200px;">@item.Kod</code>
+                                            </td>
+                                            <td class="text-end">
+                                                <button type="button"
+                                                        onclick="duzenle('@item.Id', '@item.Ad', '@item.Kod')"
+                                                        class="btn btn-sm btn-outline-warning border-0 me-2"
+                                                        title="Düzenle">
+                                                    <i class="bi bi-pencil-square fs-5"></i>
+                                                </button>
+                                                <a href="/Admin/Api_Sil/@item.Id"
+                                                   class="btn btn-sm btn-outline-danger border-0"
+                                                   onclick="return confirm('Bu API kaydını silmek istediğinize emin misiniz?')"
+                                                   title="Sil">
+                                                    <i class="bi bi-trash3 fs-5"></i>
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    }
+                                }
+                                else
+                                {
+                                    <tr>
+                                        <td colspan="4" class="text-center py-5 text-muted">
+                                            <i class="bi bi-info-circle fs-1 d-block mb-2"></i>
+                                            Henüz kayıtlı bir API bulunamadı.
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Tablodaki düzenle butonuna basınca verileri form doldurur
+        function duzenle(id, ad, kod) {
+            document.getElementById('apiId').value = id;
+            document.getElementById('apiAd').value = ad;
+            document.getElementById('apiKod').value = kod;
+
+            document.getElementById('formTitle').innerHTML = '<i class="bi bi-pencil-square me-2 text-warning"></i>API Düzenle (#' + id + ')';
+            document.getElementById('apiAd').focus();
+        }
+
+        // Formu ekleme moduna geri döndürür
+        function formSifirla() {
+            document.getElementById('apiId').value = "0";
+            document.getElementById('apiAd').value = "";
+            document.getElementById('apiKod').value = "";
+            document.getElementById('formTitle').innerHTML = '<i class="bi bi-plus-circle me-2 text-primary"></i>Yeni API Ekle';
+        }
+    </script>
+}

@@ -1,5 +1,6 @@
 using E_ticaret.Models;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using System.Diagnostics;
 
 namespace E_ticaret.Controllers
@@ -7,18 +8,24 @@ namespace E_ticaret.Controllers
     public class HomeController : Controller
     {
         private readonly ILogger<HomeController> _logger;
+        // Veritabanı bağlantısı için context ekledik
+        private readonly EticaretContext _context;
 
-        public HomeController(ILogger<HomeController> logger)
+        // Constructor'a _context'i dahil ettik
+        public HomeController(ILogger<HomeController> logger, EticaretContext context)
         {
             _logger = logger;
+            _context = context;
         }
 
         public IActionResult Index()
         {
-            return View();
+            // Veritabanındaki ürünleri listeliyoruz
+            var urunler = _context.Urunlers.ToList();
+            return View(urunler);
         }
 
-        public IActionResult Privacy()
+        public IActionResult Kullanicilar()
         {
             return View();
         }

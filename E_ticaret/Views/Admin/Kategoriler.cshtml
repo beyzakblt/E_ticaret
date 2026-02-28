@@ -1,0 +1,150 @@
+﻿@model IEnumerable<E_ticaret.Modellerim.Kategorilerim>
+
+@{
+    ViewData["Title"] = "Kategori Yönetimi";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="container-fluid py-4">
+    <div class="row mb-4">
+        <div class="col-md-6"><h3>Kategori Yönetimi</h3></div>
+        <div class="col-md-6 text-end">
+            <button class="btn btn-primary rounded-pill" data-bs-toggle="modal" data-bs-target="#anaKategoriEkleModal">Yeni Ana Kategori</button>
+            <button class="btn btn-info text-white rounded-pill" data-bs-toggle="modal" data-bs-target="#altKategoriEkleModal">Yeni Alt Kategori</button>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-lg-4">
+            <div class="card shadow-sm border-0 rounded-4">
+                <div class="card-header bg-dark text-white py-3"><h5>Ana Kategoriler</h5></div>
+                <div class="card-body p-0">
+                    <div class="list-group list-group-flush">
+                        @foreach (var ana in Model.FirstOrDefault()?.AnaKategori ?? new List<E_ticaret.Models.Kategoriler>())
+                        {
+                            <div class="list-group-item d-flex justify-content-between align-items-center py-3">
+                                <span>@ana.KategoriAdi</span>
+                                <div class="btn-group">
+                                    <button class="btn btn-sm text-warning" onclick="anaDuzenleAc('@ana.Id', '@ana.KategoriAdi', '@ana.Durum')"><i class="bi bi-pencil"></i></button>
+                                    <a href="/Admin/AnaKategoriSil/@ana.Id" class="btn btn-sm text-danger" onclick="return confirm('Silinsin mi?')"><i class="bi bi-trash"></i></a>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-8">
+            <div class="card shadow-sm border-0 rounded-4">
+                <div class="card-header bg-primary text-white py-3"><h5>Alt Kategoriler</h5></div>
+                <div class="card-body p-0">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead>
+                            <tr><th class="ps-4">Alt Kategori</th><th>Üst Kategori</th><th>Durum</th><th class="text-end pe-4">İşlem</th></tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in Model)
+                            {
+                                <tr>
+                                    <td class="ps-4">@item.ad</td>
+                                    <td><span class="badge bg-light text-dark border">@item.anakat_ad</span></td>
+                                    <td><span class="badge @(item.durum == 1 ? "bg-success" : "bg-danger")">@(item.durum == 1 ? "Aktif" : "Pasif")</span></td>
+                                    <td class="text-end pe-4">
+                                        <button class="btn btn-outline-warning btn-sm" onclick="altDuzenleAc('@item.altid', '@item.ad', '@item.durum')"><i class="bi bi-pencil"></i></button>
+                                        <a href="/Admin/AltKategoriSil/@item.altid" class="btn btn-outline-danger btn-sm" onclick="return confirm('Silinsin mi?')"><i class="bi bi-trash"></i></a>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="anaKategoriEkleModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form action="/Admin/AnaKategoriEkle" method="post">
+                <div class="modal-header"><h5>Yeni Ana Kategori</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+                <div class="modal-body">
+                    <input type="text" name="KategoriAdi" class="form-control mb-3" placeholder="Kategori Adı" required />
+                    <select name="Durum" class="form-select"><option value="1">Aktif</option><option value="0">Pasif</option></select>
+                </div>
+                <div class="modal-footer"><button type="submit" class="btn btn-primary">Kaydet</button></div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="altKategoriEkleModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form action="/Admin/AltKategoriEkle" method="post">
+                <div class="modal-header"><h5>Yeni Alt Kategori</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+                <div class="modal-body">
+                    <select name="AnaKategoriId" class="form-select mb-3" required>
+                        @foreach (var ana in Model.FirstOrDefault()?.AnaKategori ?? new List<E_ticaret.Models.Kategoriler>())
+                        {
+                            <option value="@ana.Id">@ana.KategoriAdi</option>
+                        }
+                    </select>
+                    <input type="text" name="KategoriAdi" class="form-control mb-3" placeholder="Alt Kategori Adı" required />
+                    <select name="Durum" class="form-select"><option value="1">Aktif</option><option value="0">Pasif</option></select>
+                </div>
+                <div class="modal-footer"><button type="submit" class="btn btn-info text-white">Kaydet</button></div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="altEditModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form action="/Admin/AltKategoriGuncelle" method="post">
+                <div class="modal-header bg-warning"><h5>Alt Kategori Düzenle</h5></div>
+                <div class="modal-body">
+                    <input type="hidden" name="altid" id="edit_altid" />
+                    <input type="text" name="ad" id="edit_altad" class="form-control mb-3" />
+                    <select name="durum" id="edit_altdurum" class="form-select"><option value="1">Aktif</option><option value="0">Pasif</option></select>
+                </div>
+                <div class="modal-footer"><button type="submit" class="btn btn-warning">Güncelle</button></div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="anaEditModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form action="/Admin/AnaKategoriGuncelle" method="post">
+                <div class="modal-header bg-warning"><h5>Ana Kategori Düzenle</h5></div>
+                <div class="modal-body">
+                    <input type="hidden" name="anaid" id="edit_anaid" />
+                    <input type="text" name="ad" id="edit_anaad" class="form-control mb-3" />
+                    <select name="durum" id="edit_anadurum" class="form-select"><option value="1">Aktif</option><option value="0">Pasif</option></select>
+                </div>
+                <div class="modal-footer"><button type="submit" class="btn btn-warning">Güncelle</button></div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function altDuzenleAc(id, ad, durum) {
+            document.getElementById('edit_altid').value = id;
+            document.getElementById('edit_altad').value = ad;
+            document.getElementById('edit_altdurum').value = durum;
+            new bootstrap.Modal(document.getElementById('altEditModal')).show();
+        }
+        function anaDuzenleAc(id, ad, durum) {
+            document.getElementById('edit_anaid').value = id;
+            document.getElementById('edit_anaad').value = ad;
+            document.getElementById('edit_anadurum').value = durum;
+            new bootstrap.Modal(document.getElementById('anaEditModal')).show();
+        }
+    </script>
+}
