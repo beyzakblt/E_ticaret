@@ -1,0 +1,45 @@
+﻿@model E_ticaret.Models.KullaniciAdresleri
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-6">
+            <div class="card border-0 shadow-lg rounded-4 p-4">
+                <h3 class="fw-bold mb-4 text-primary"><i class="bi bi-geo-alt-fill me-2"></i>Yeni Adres Ekle</h3>
+                <form asp-action="AdresEkle" method="post">
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold">Adres Başlığı</label>
+                        <input type="text" name="AdresBasligi" class="form-control rounded-pill px-3" placeholder="Örn: Evim, İş Yerim" required />
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label small fw-bold">Alıcı Ad Soyad</label>
+                            <input type="text" name="AdSoyad" class="form-control rounded-pill px-3" required />
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label small fw-bold">Telefon</label>
+                            <input type="text" name="Telefon" class="form-control rounded-pill px-3" required />
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label small fw-bold">Şehir</label>
+                            <input type="text" name="Sehir" class="form-control rounded-pill px-3" required />
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label small fw-bold">İlçe</label>
+                            <input type="text" name="Ilce" class="form-control rounded-pill px-3" required />
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold">Tam Adres</label>
+                        <textarea name="TamAdres" class="form-control rounded-4" rows="3" required></textarea>
+                    </div>
+                    <button type="submit" class="gradient-btn w-100 py-3 mt-3 shadow border-0">Adresi Kaydet</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

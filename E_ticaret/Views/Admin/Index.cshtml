@@ -1,8 +1,172 @@
-﻿
-@{
-    ViewData["Title"] = "Index";
+﻿@{
+    ViewData["Title"] = "Yönetim Paneli";
     Layout = "~/Views/Shared/_AdminLayout.cshtml";
 }
 
-<h1>Index</h1>
+<div class="container-fluid py-4">
+    
+    @* 1. HOŞ GELDİN KARTI *@
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm rounded-4 bg-primary text-white p-4 overflow-hidden position-relative animate__animated animate__fadeInDown">
+                <div class="position-relative" style="z-index: 2;">
+                    <h2 class="fw-bold">Hoş geldin, @ViewBag.AdminName! 👋</h2>
+                    <p class="mb-0 opacity-75">Mağazanın bugünkü performansını ve bekleyen işlerini buradan takip edebilirsin.</p>
+                </div>
+                <i class="bi bi-speedometer2 position-absolute opacity-25" style="font-size: 12rem; right: -30px; top: -50px;"></i>
+            </div>
+        </div>
+    </div>
 
+    @* 2. TIKLANABİLİR RENKLİ İSTATİSTİK KARTLARI *@
+    <div class="row g-4 mb-5 text-white text-center">
+        
+        @* TOPLAM SİPARİŞ *@
+        <div class="col-md-3">
+            <a href="/Admin/Siparis_Yonetimi" class="text-decoration-none shadow-hover d-block h-100">
+                <div class="card border-0 shadow-sm rounded-4 p-4 h-100" style="background: linear-gradient(45deg, #FF512F, #DD2476);">
+                    <i class="bi bi-bag-check-fill fs-1"></i>
+                    <h3 class="fw-bold mt-2">@ViewBag.ToplamSiparis</h3>
+                    <div class="small opacity-75 mt-1">Toplam Sipariş <i class="bi bi-arrow-right-short"></i></div>
+                </div>
+            </a>
+        </div>
+
+        @* TOPLAM KAZANÇ *@
+        <div class="col-md-3">
+            <a href="/Admin/RaporYazdir" class="text-decoration-none shadow-hover d-block h-100">
+                <div class="card border-0 shadow-sm rounded-4 p-4 h-100" style="background: linear-gradient(45deg, #1D976C, #93F9B9);">
+                    <i class="bi bi-currency-dollar fs-1 text-dark"></i>
+                    <h3 class="fw-bold mt-2 text-dark">@ViewBag.ToplamKazanc.ToString("C2")</h3>
+                    <div class="small text-dark opacity-75 mt-1">Rapor Al <i class="bi bi-file-earmark-excel"></i></div>
+                </div>
+            </a>
+        </div>
+
+        @* KAYITLI MÜŞTERİ *@
+        <div class="col-md-3">
+            <a href="/Admin/Kullanicilar" class="text-decoration-none shadow-hover d-block h-100">
+                <div class="card border-0 shadow-sm rounded-4 p-4 h-100" style="background: linear-gradient(45deg, #2193b0, #6dd5ed);">
+                    <i class="bi bi-people-fill fs-1"></i>
+                    <h3 class="fw-bold mt-2">@ViewBag.MusteriSayisi</h3>
+                    <div class="small opacity-75 mt-1">Müşterileri Yönet <i class="bi bi-arrow-right-short"></i></div>
+                </div>
+            </a>
+        </div>
+
+        @* TOPLAM ÜRÜN *@
+        <div class="col-md-3">
+            <a href="/Admin/Urunler" class="text-decoration-none shadow-hover d-block h-100">
+                <div class="card border-0 shadow-sm rounded-4 p-4 h-100" style="background: linear-gradient(45deg, #f093fb, #f5576c);">
+                    <i class="bi bi-box-seam-fill fs-1"></i>
+                    <h3 class="fw-bold mt-2">@ViewBag.UrunSayisi</h3>
+                    <div class="small opacity-75 mt-1">Ürün Havuzu <i class="bi bi-arrow-right-short"></i></div>
+                </div>
+            </a>
+        </div>
+    </div>
+
+    @* 3. GRAFİK VE HIZLI LİSTE ALANI *@
+    <div class="row g-4">
+        
+        @* SOL TARAF: GRAFİK *@
+        <div class="col-md-8">
+            <div class="card border-0 shadow-sm rounded-4 p-4 h-100">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h5 class="fw-bold mb-0">Sipariş Analiz Grafiği</h5>
+                    <i class="bi bi-pie-chart text-muted"></i>
+                </div>
+                <div style="height: 300px; display: flex; justify-content: center;">
+                    <canvas id="dashboardChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        @* SAĞ TARAF: DURUM ÖZETİ *@
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm rounded-4 p-4 h-100">
+                <h5 class="fw-bold mb-4">Operasyonel Durum</h5>
+                
+                <div class="list-group list-group-flush">
+                    <div class="list-group-item d-flex justify-content-between align-items-center border-0 bg-light rounded-3 mb-2 p-3">
+                        <div class="d-flex align-items-center">
+                            <span class="p-2 bg-warning bg-opacity-10 text-warning rounded-3 me-3">
+                                <i class="bi bi-hourglass-split"></i>
+                            </span>
+                            <span class="fw-semibold">Bekleyen</span>
+                        </div>
+                        <span class="badge bg-warning rounded-pill">@ViewBag.BekleyenSiparis</span>
+                    </div>
+
+                    <div class="list-group-item d-flex justify-content-between align-items-center border-0 bg-light rounded-3 mb-2 p-3">
+                        <div class="d-flex align-items-center">
+                            <span class="p-2 bg-success bg-opacity-10 text-success rounded-3 me-3">
+                                <i class="bi bi-check2-all"></i>
+                            </span>
+                            <span class="fw-semibold">Tamamlanan</span>
+                        </div>
+                        <span class="badge bg-success rounded-pill">@ViewBag.TamamlananSiparis</span>
+                    </div>
+
+                    <div class="list-group-item d-flex justify-content-between align-items-center border-0 bg-light rounded-3 mb-2 p-3">
+                        <div class="d-flex align-items-center">
+                            <span class="p-2 bg-danger bg-opacity-10 text-danger rounded-3 me-3">
+                                <i class="bi bi-x-octagon"></i>
+                            </span>
+                            <span class="fw-semibold">İptal / İade</span>
+                        </div>
+                        <span class="badge bg-danger rounded-pill">@ViewBag.IptalSiparis</span>
+                    </div>
+                </div>
+
+                <div class="mt-auto">
+                    <p class="small text-muted mb-3">Sipariş detaylarını incelemek için butona tıkla.</p>
+                    <a href="/Admin/Siparis_Yonetimi" class="btn btn-primary w-100 rounded-pill py-2 shadow-sm">Tüm Siparişler</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@* ÖZEL CSS EFEKTLERİ *@
+<style>
+    .shadow-hover { transition: 0.3s; }
+    .shadow-hover:hover { transform: translateY(-8px); }
+    .shadow-hover .card { transition: 0.3s; border: 1px solid rgba(255,255,255,0.1) !important; }
+    .shadow-hover:hover .card { box-shadow: 0 15px 30px rgba(0,0,0,0.15) !important; }
+</style>
+
+@* CHART.JS ENTEGRASYONU *@
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const ctx = document.getElementById('dashboardChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Tamamlanan', 'İptal/İade', 'Bekleyen'],
+                datasets: [{
+                    data: [@ViewBag.TamamlananSiparis, @ViewBag.IptalSiparis, @ViewBag.BekleyenSiparis],
+                    backgroundColor: ['#1D976C', '#f5576c', '#ffc107'],
+                    borderWidth: 5,
+                    borderColor: '#ffffff',
+                    hoverOffset: 15
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            padding: 20,
+                            font: { size: 14, weight: 'bold' }
+                        }
+                    }
+                },
+                cutout: '70%'
+            }
+        });
+    });
+</script>

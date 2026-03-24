@@ -1,5 +1,6 @@
 using E_ticaret.Models;
 using Microsoft.EntityFrameworkCore;
+using Rotativa.AspNetCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -20,6 +21,7 @@ builder.Services.AddSession(options =>
 builder.Services.AddControllersWithViews();
 
 var app = builder.Build();
+RotativaConfiguration.Setup(app.Environment.WebRootPath,"Rotativa");
 
 // --- HTTP Request Pipeline (Middleware) Ayarları ---
 
@@ -34,13 +36,13 @@ app.UseStaticFiles();
 
 app.UseRouting();
 
-// ÖNEMLİ: UseSession, UseRouting'den SONRA, UseAuthorization'dan ÖNCE gelmelidir.
+
 app.UseSession();
 
 app.UseAuthorization();
 
 app.MapControllerRoute(
     name: "default",
-    pattern: "{controller=Account}/{action=Login}/{id?}");
+    pattern: "{controller=Home}/{action=Index}/{id?}");
 
 app.Run();

@@ -19,9 +19,17 @@ public partial class EticaretContext : DbContext
 
     public virtual DbSet<ApiAyarlari> ApiAyarlaris { get; set; }
 
+    public virtual DbSet<ContactMessage> ContactMessages { get; set; }
+
+    public virtual DbSet<Favoriler> Favorilers { get; set; }
+
     public virtual DbSet<Kategoriler> Kategorilers { get; set; }
 
+    public virtual DbSet<KullaniciAdresleri> KullaniciAdresleris { get; set; }
+
     public virtual DbSet<Kullanicilar> Kullanicilars { get; set; }
+
+    public virtual DbSet<Kuponlar> Kuponlars { get; set; }
 
     public virtual DbSet<Markalar> Markalars { get; set; }
 
@@ -33,6 +41,8 @@ public partial class EticaretContext : DbContext
 
     public virtual DbSet<Sozlesmeler> Sozlesmelers { get; set; }
 
+    public virtual DbSet<StokHareketleri> StokHareketleris { get; set; }
+
     public virtual DbSet<UrunFoto> UrunFotos { get; set; }
 
     public virtual DbSet<UrunYorumlari> UrunYorumlaris { get; set; }
@@ -42,8 +52,7 @@ public partial class EticaretContext : DbContext
     public virtual DbSet<Yoneticiler> Yoneticilers { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
-        => optionsBuilder.UseSqlServer("Server=beyza;Database=Eticaret;Trusted_Connection=True;TrustServerCertificate=True;");
+        => optionsBuilder.UseSqlServer("Name=DB");
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -70,6 +79,29 @@ public partial class EticaretContext : DbContext
             entity.Property(e => e.Kod).HasColumnType("text");
         });
 
+        modelBuilder.Entity<ContactMessage>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("PK__ContactM__3214EC07B9D38400");
+
+            entity.Property(e => e.CreatedAt)
+                .HasDefaultValueSql("(getdate())")
+                .HasColumnType("datetime");
+            entity.Property(e => e.Email).HasMaxLength(100);
+            entity.Property(e => e.FullName).HasMaxLength(100);
+            entity.Property(e => e.Subject).HasMaxLength(200);
+        });
+
+        modelBuilder.Entity<Favoriler>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("PK__Favorile__3214EC0788E4EF0F");
+
+            entity.ToTable("Favoriler");
+
+            entity.Property(e => e.EklenmeTarihi)
+                .HasDefaultValueSql("(getdate())")
+                .HasColumnType("datetime");
+        });
+
         modelBuilder.Entity<Kategoriler>(entity =>
         {
             entity.ToTable("Kategoriler");
@@ -79,6 +111,21 @@ public partial class EticaretContext : DbContext
                 .HasMaxLength(250)
                 .IsUnicode(false)
                 .HasColumnName("Kategori_Adi");
+        });
+
+        modelBuilder.Entity<KullaniciAdresleri>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("PK__Kullanic__3214EC0778B3AA40");
+
+            entity.ToTable("KullaniciAdresleri");
+
+            entity.Property(e => e.AdSoyad).HasMaxLength(100);
+            entity.Property(e => e.AdresBasligi).HasMaxLength(50);
+            entity.Property(e => e.Ilce).HasMaxLength(50);
+            entity.Property(e => e.IsDefault).HasDefaultValue(false);
+            entity.Property(e => e.PostaKodu).HasMaxLength(10);
+            entity.Property(e => e.Sehir).HasMaxLength(50);
+            entity.Property(e => e.Telefon).HasMaxLength(20);
         });
 
         modelBuilder.Entity<Kullanicilar>(entity =>
@@ -102,6 +149,21 @@ public partial class EticaretContext : DbContext
             entity.Property(e => e.Telefon).HasMaxLength(20);
         });
 
+        modelBuilder.Entity<Kuponlar>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("PK__Kuponlar__3214EC07652A09F4");
+
+            entity.ToTable("Kuponlar");
+
+            entity.HasIndex(e => e.KuponKodu, "UQ__Kuponlar__F552D46F673DD59E").IsUnique();
+
+            entity.Property(e => e.BitisTarihi).HasColumnType("datetime");
+            entity.Property(e => e.Durum).HasDefaultValue(true);
+            entity.Property(e => e.KullanilanAdet).HasDefaultValue(0);
+            entity.Property(e => e.KuponKodu).HasMaxLength(50);
+            entity.Property(e => e.TanimliMail).HasMaxLength(100);
+        });
+
         modelBuilder.Entity<Markalar>(entity =>
         {
             entity.ToTable("Markalar");
@@ -119,19 +181,28 @@ public partial class EticaretContext : DbContext
 
             entity.ToTable("Siparisler");
 
+            entity.HasIndex(e => e.SiparisNo, "IX_Siparisler_SiparisNo");
+
             entity.Property(e => e.Adet).HasDefaultValue(1);
             entity.Property(e => e.Durum)
                 .HasMaxLength(50)
                 .HasDefaultValue("Hazırlanıyor");
             entity.Property(e => e.KullaniciId).HasColumnName("Kullanici_Id");
+            entity.Property(e => e.MisafirAdSoyad).HasMaxLength(250);
+            entity.Property(e => e.MisafirAdres).HasMaxLength(500);
+            entity.Property(e => e.MisafirEmail).HasMaxLength(100);
+            entity.Property(e => e.MisafirTelefon).HasMaxLength(20);
+            entity.Property(e => e.SiparisNo).HasMaxLength(50);
             entity.Property(e => e.SiparisTarihi)
                 .HasDefaultValueSql("(getdate())")
                 .HasColumnType("datetime")
                 .HasColumnName("Siparis_Tarihi");
+            entity.Property(e => e.TalepTarihi).HasColumnType("datetime");
             entity.Property(e => e.ToplamFiyat)
                 .HasColumnType("decimal(18, 2)")
                 .HasColumnName("Toplam_Fiyat");
             entity.Property(e => e.UrunId).HasColumnName("Urun_Id");
+            entity.Property(e => e.UygulananKupon).HasMaxLength(50);
         });
 
         modelBuilder.Entity<SiteAyarlari>(entity =>
@@ -187,6 +258,25 @@ public partial class EticaretContext : DbContext
                 .HasColumnType("datetime");
         });
 
+        modelBuilder.Entity<StokHareketleri>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("PK__StokHare__3214EC07D2DF21FD");
+
+            entity.ToTable("StokHareketleri");
+
+            entity.Property(e => e.AdetDegisimi).HasDefaultValue(0);
+            entity.Property(e => e.EskiAlisFiyat)
+                .HasDefaultValue(0m)
+                .HasColumnType("decimal(18, 2)");
+            entity.Property(e => e.IslemTipi).HasMaxLength(100);
+            entity.Property(e => e.KayitTarihi)
+                .HasDefaultValueSql("(getdate())")
+                .HasColumnType("datetime");
+            entity.Property(e => e.YeniAlisFiyat)
+                .HasDefaultValue(0m)
+                .HasColumnType("decimal(18, 2)");
+        });
+
         modelBuilder.Entity<UrunFoto>(entity =>
         {
             entity.ToTable("Urun_Foto");
@@ -212,6 +302,7 @@ public partial class EticaretContext : DbContext
 
             entity.Property(e => e.Id).HasColumnName("id");
             entity.Property(e => e.Aciklama).HasColumnType("text");
+            entity.Property(e => e.AlisFiyati).HasColumnType("decimal(18, 2)");
             entity.Property(e => e.Fiyat).HasColumnType("decimal(18, 2)");
             entity.Property(e => e.FotoId).HasColumnName("Foto_Id");
             entity.Property(e => e.IndirimliFiyat)

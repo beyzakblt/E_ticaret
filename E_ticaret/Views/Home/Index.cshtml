@@ -3,42 +3,132 @@
 @{
     ViewData["Title"] = "Anasayfa";
     var userId = Context.Session.GetString("UserId");
+    var guestId = Context.Session.GetString("GuestId"); // Misafir ID'sini de aldık
+    var searchQuery = ViewBag.SearchQuery as string;
+    var dinamikSliderlar = ViewBag.Sliders as List<E_ticaret.Models.Slider>;
+}
+
+@* --- PREMIUM ANA SAYFA SLIDER --- *@
+@if (dinamikSliderlar != null && dinamikSliderlar.Any() && string.IsNullOrEmpty(searchQuery)){
+    <div id="homeCarousel" class="carousel slide carousel-fade shadow-lg mb-5" data-bs-ride="carousel">
+        <div class="carousel-indicators">
+            @for (int i = 0; i < dinamikSliderlar.Count; i++)
+            {
+                <button type="button" data-bs-target="#homeCarousel" data-bs-slide-to="@i" class="@(i == 0 ? "active" : "")"></button>
+            }
+        </div>
+        <div class="carousel-inner rounded-bottom-5 overflow-hidden">
+            @for (int i = 0; i < dinamikSliderlar.Count; i++)
+            {
+                var slider = dinamikSliderlar[i];
+                <div class="carousel-item @(i == 0 ? "active" : "")" data-bs-interval="6000">
+                    <a href="@(string.IsNullOrEmpty(slider.Link) ? "#" : slider.Link)">
+                        <img src="@slider.ResimYolu" class="d-block w-100" alt="@slider.Baslik">
+                        <div class="slider-overlay"></div>
+                    </a>
+                    @if (!string.IsNullOrEmpty(slider.Baslik))
+                    {
+                        <div class="carousel-caption d-none d-md-block text-start animate__animated animate__fadeInLeft">
+                            <h2 class="display-3 fw-bolder text-white">@slider.Baslik</h2>
+                            <p class="fs-4 text-white-50 mb-4">@slider.Aciklama</p>
+                            <a href="@slider.Link" class="btn btn-light btn-lg rounded-pill px-5 fw-bold shadow">Keşfet</a>
+                        </div>
+                    }
+                </div>
+            }
+        </div>
+        @if (dinamikSliderlar.Count > 1)
+        {
+            <button class="carousel-control-prev" type="button" data-bs-target="#homeCarousel" data-bs-slide="prev">
+                <span class="carousel-control-prev-icon rounded-circle p-4"></span>
+            </button>
+            <button class="carousel-control-next" type="button" data-bs-target="#homeCarousel" data-bs-slide="next">
+                <span class="carousel-control-next-icon rounded-circle p-4"></span>
+            </button>
+        }
+    </div>
 }
 
 <div class="container py-5">
-    <h2 class="fw-bold mb-4">Ürünlerimiz</h2>
+    @* BİLGİ PANELİ *@
+    <div class="d-flex justify-content-between align-items-center mb-5">
+        <div>
+            @if (!string.IsNullOrEmpty(searchQuery))
+            {
+                <h2 class="fw-bold mb-0 display-6">Arama Sonuçları</h2>
+                <p class="text-muted fs-5">"<strong>@searchQuery</strong>" için @Model.Count() ürün listeleniyor.</p>
+            }
+            else
+            {
+                <h2 class="fw-bold mb-0 display-6">Vitrinimiz</h2>
+                <p class="text-muted fs-5">Beyza Store özel koleksiyonunu keşfedin.</p>
+            }
+        </div>
+    </div>
+
+    @* ÜRÜN LİSTESİ *@
     <div class="row g-4">
         @foreach (var item in Model)
         {
-            // Bu ürünün o an kullanıcının sepetinde kaç adet olduğunu bulalım
             int sepetAdet = 0;
+            bool isFavori = false;
+
+            // Hem üye hem misafir için sepet miktarını gösteriyoruz
             if (userId != null)
             {
-                sepetAdet = _db.Siparislers.FirstOrDefault(x => x.KullaniciId == int.Parse(userId) && x.UrunId == item.Id && x.Durum == "Sepette")?.Adet ?? 0;
+                int uId = int.Parse(userId);
+                sepetAdet = _db.Siparislers.FirstOrDefault(x => x.KullaniciId == uId && x.UrunId == item.Id && x.Durum == "Sepette")?.Adet ?? 0;
+                isFavori = _db.Favorilers.Any(x => x.KullaniciId == uId && x.UrunId == item.Id);
+            }
+            else if (!string.IsNullOrEmpty(guestId))
+            {
+                sepetAdet = _db.Siparislers.FirstOrDefault(x => x.GuestId == guestId && x.UrunId == item.Id && x.Durum == "Sepette")?.Adet ?? 0;
             }
 
-            <div class="col-md-3">
-                <div class="card h-100 p-3 shadow-sm border-0 rounded-4">
-                    <img src="https://picsum.photos/400/500?product=@item.Id" class="card-img-top rounded-4 mb-3" alt="@item.UrunAdi">
-                    <div class="card-body p-0">
-                        <h5 class="fw-bold">@item.UrunAdi</h5>
-                        <p class="text-muted small">@item.Aciklama</p>
+            <div class="col-lg-4 col-md-6 col-sm-12 animate__animated animate__fadeInUp">
+                <div class="card h-100 p-4 shadow-sm border-0 rounded-4 position-relative product-card @(item.Adet <= 0 ? "stock-out" : "")">
 
-                        <div class="d-flex justify-content-between align-items-center mt-3">
-                            <span class="fs-5 fw-bold text-primary">@item.Fiyat.ToString("C2")</span>
+                    @if (item.Adet <= 0)
+                    {
+                        <span class="badge bg-danger position-absolute rounded-pill px-3 py-2 shadow-sm"
+                              style="top: 25px; left: 25px; z-index: 15;">
+                            <i class="bi bi-x-circle me-1"></i>Tükendi
+                        </span>
+                    }
 
-                            @* ARTI - EKSİ BUTONLARI *@
-                            <div class="d-flex align-items-center bg-light rounded-pill p-1">
-                                <button class="btn btn-sm btn-white rounded-circle shadow-sm" onclick="sepetGuncelle(@item.Id, -1)">
-                                    <i class="bi bi-dash"></i>
-                                </button>
+                    <button onclick="favoriIslem(@item.Id)" class="btn btn-white rounded-circle shadow-sm position-absolute"
+                            style="top: 25px; right: 25px; z-index: 10; width: 45px; height: 45px; border:none;">
+                        <i class="bi bi-heart-fill @(isFavori ? "text-danger" : "text-muted")" style="font-size: 1.4rem;"></i>
+                    </button>
 
-                                <span id="adet-@item.Id" class="mx-2 fw-bold">@sepetAdet</span>
+                    <a href="/Home/UrunDetay/@item.Id" class="text-center d-block mt-3">
+                        @{
+                            var foto = _db.UrunFotos.FirstOrDefault(x => x.UrunId == item.Id)?.Ad ?? "https://picsum.photos/600/800?product=" + item.Id;
+                        }
+                        <img src="@foto" class="card-img-top rounded-4 mb-4 @(item.Adet <= 0 ? "grayscale" : "")" alt="@item.UrunAdi" style="height: 320px; object-fit: contain; transition: 0.5s;">
+                    </a>
 
-                                <button class="btn btn-sm btn-primary rounded-circle shadow-sm" onclick="sepetGuncelle(@item.Id, 1)">
-                                    <i class="bi bi-plus"></i>
-                                </button>
-                            </div>
+                    <div class="card-body p-0 d-flex flex-column">
+                        <a href="/Home/UrunDetay/@item.Id" class="text-decoration-none text-dark">
+                            <h4 class="fw-bold text-truncate">@item.UrunAdi</h4>
+                        </a>
+                        <p class="text-muted small flex-grow-1">@item.Aciklama</p>
+
+                        <div class="d-flex justify-content-between align-items-center mt-4">
+                            <span class="fs-3 fw-bold text-primary">@item.Fiyat.ToString("C2")</span>
+
+                            @if (item.Adet > 0)
+                            {
+                                <div class="d-flex align-items-center bg-light rounded-pill p-2 shadow-sm border">
+                                    <button class="btn btn-sm btn-white rounded-circle shadow-sm" onclick="sepetGuncelle(@item.Id, -1)">
+                                        <i class="bi bi-dash-lg"></i>
+                                    </button>
+                                    <span id="adet-@item.Id" class="mx-3 fw-bold fs-5">@sepetAdet</span>
+                                    <button class="btn btn-sm btn-primary rounded-circle shadow-sm" onclick="sepetGuncelle(@item.Id, 1)">
+                                        <i class="bi bi-plus-lg"></i>
+                                    </button>
+                                </div>
+                            }
                         </div>
                     </div>
                 </div>
@@ -47,23 +137,53 @@
     </div>
 </div>
 
+<style>
+    /* --- SLIDER MODERNİZASYONU --- */
+    #homeCarousel { margin-top: -1.5rem; border-radius: 0 0 60px 60px; overflow: hidden; background: #000; }
+    #homeCarousel .carousel-item { height: 85vh; min-height: 500px; }
+    #homeCarousel .carousel-item img { height: 100%; object-fit: cover; opacity: 0.7; transition: transform 10s linear; }
+    #homeCarousel .carousel-item.active img { transform: scale(1.15); }
+    .slider-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(to bottom, transparent, rgba(0,0,0,0.4)); }
+    .carousel-caption { left: 10%; bottom: 25%; max-width: 600px; z-index: 20; }
+    .carousel-indicators [data-bs-target] { width: 40px; height: 6px; border-radius: 3px; }
+
+    /* --- ÜRÜN KARTLARI --- */
+    .product-card { transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); border: 1px solid #eee !important; }
+    .product-card:hover { transform: translateY(-12px); box-shadow: 0 20px 40px rgba(0,0,0,0.1) !important; border-color: #784BA0 !important; }
+    .product-card:hover img { transform: scale(1.05); }
+    .stock-out { opacity: 0.8; background-color: #f9f9f9; }
+    .grayscale { filter: grayscale(100%); opacity: 0.5; }
+    .btn-white { background: white; color: #333; border: 1px solid #eee; }
+</style>
+
 @section Scripts {
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script>
         function sepetGuncelle(urunId, degisim) {
             $.post("/Cart/UpdateQuantity", { id: urunId, change: degisim }, function (response) {
                 if (response.success) {
-                    // 1. Karttaki yerel adet sayısını güncelle
+                    // Kartın üzerindeki ürün adedini güncelle
                     $("#adet-" + urunId).text(response.yeniUrunAdet);
-
-                    // 2. Navbardaki toplam sepet sayısını güncelle
-                    $("#cartCount").text(response.toplamSepetSayisi);
-
-                    // Efekt verelim
-                    $("#cartCount").fadeOut(100).fadeIn(100);
+                    
+                    // NAVBARTAKİ SEPET SİMGESİNİ GÜNCELLE
+                    // Layout'taki badge sınıfı: .nav-icon-badge
+                    let badge = $(".nav-icon-badge");
+                    if (badge.length > 0) {
+                        badge.text(response.toplamSepetSayisi);
+                    } else {
+                        // Eğer badge yoksa (sepet boşsa) simgenin yanına oluştur
+                        $(".bi-cart3").after('<span class="position-absolute translate-middle badge rounded-pill bg-danger nav-icon-badge">' + response.toplamSepetSayisi + '</span>');
+                    }
                 } else {
-                    window.location.href = "/Account/Login";
+                    if(response.message) alert(response.message);
+                    else window.location.href = "/Account/Login";
                 }
+            });
+        }
+
+        function favoriIslem(id) {
+            $.post("/Home/FavoriIslem", { urunId: id }, function (res) {
+                if (res.success) location.reload();
+                else window.location.href = "/Account/Login";
             });
         }
     </script>

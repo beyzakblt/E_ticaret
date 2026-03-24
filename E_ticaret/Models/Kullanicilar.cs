@@ -30,4 +30,8 @@ public partial class Kullanicilar
     public string? Ilce { get; set; }
 
     public string? PostaKodu { get; set; }
+
+    public string? PasswordResetToken { get; set; }
+
+    public DateTime? ResetTokenExpires { get; set; }
 }

@@ -1,0 +1,105 @@
+﻿@using E_ticaret.Models
+@using Microsoft.AspNetCore.Http
+@model IEnumerable<E_ticaret.Models.Siparisler>
+@inject EticaretContext _db
+@{
+    var ilkSiparis = Model.FirstOrDefault();
+    ViewData["Title"] = "Sipariş Detayı";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    var userId = Context.Session.GetString("UserId");
+}
+
+@if (ilkSiparis == null)
+{
+    <div class="container py-5 mt-5 text-center">
+        <div class="alert alert-warning rounded-4 shadow-sm py-5">
+            <i class="bi bi-search display-1 text-muted mb-3"></i>
+            <h2 class="fw-bold">Sipariş bulunamadı.</h2>
+            <p class="text-muted">Girdiğiniz bilgilerle eşleşen bir sipariş kaydı mevcut değil.</p>
+            <a href="/Home/SiparisTakip" class="btn btn-primary rounded-pill px-4 mt-3">Tekrar Dene</a>
+        </div>
+    </div>
+}
+else
+{
+    <div class="container py-5 mt-5">
+        <div class="row g-4">
+            @* SOL TARAF: SİPARİŞ DURUMU *@
+            <div class="col-lg-8">
+                <div class="card border-0 shadow-lg rounded-4 p-4 mb-4">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h4 class="fw-bold mb-0 text-primary">Sipariş: #@ilkSiparis.SiparisNo</h4>
+                        <span class="badge @(ilkSiparis.Durum == "İptal Edildi" ? "bg-danger" : "bg-success") rounded-pill px-3 py-2">
+                            @ilkSiparis.Durum
+                        </span>
+                    </div>
+
+                    <div class="order-tracking-wrapper py-4">
+                        <div class="track-step @(ilkSiparis.Durum != "İptal Edildi" ? "active" : "")">
+                            <div class="step-icon"><i class="bi bi-check-lg"></i></div>
+                            <div class="step-text">Alındı</div>
+                        </div>
+                        <div class="track-step @(new[] {"Hazırlanıyor", "Kargolandı", "Teslim Edildi"}.Contains(ilkSiparis.Durum) ? "active" : "")">
+                            <div class="step-icon"><i class="bi bi-box-seam"></i></div>
+                            <div class="step-text">Hazırlanıyor</div>
+                        </div>
+                        <div class="track-step @(new[] {"Kargolandı", "Teslim Edildi"}.Contains(ilkSiparis.Durum) ? "active" : "")">
+                            <div class="step-icon"><i class="bi bi-truck"></i></div>
+                            <div class="step-text">Kargoda</div>
+                        </div>
+                    </div>
+                </div>
+
+                @* ÜRÜN LİSTESİ *@
+                <div class="card border-0 shadow-lg rounded-4 p-4">
+                    <h5 class="fw-bold mb-3">Paketteki Ürünler</h5>
+                    @foreach (var item in Model)
+                    {
+                        var urun = _db.Urunlers.Find(item.UrunId);
+                        var urunFoto = _db.UrunFotos.FirstOrDefault(x => x.UrunId == item.UrunId)?.Ad;
+                        
+                        <div class="d-flex align-items-center border-bottom py-3">
+                            <img src="@(string.IsNullOrEmpty(urunFoto) ? "https://picsum.photos/200" : urunFoto)" 
+                                 class="rounded-3 me-3" style="width: 70px; height: 70px; object-fit: cover;">
+                            
+                            <div class="flex-grow-1">
+                                <h6 class="mb-0 fw-bold">@urun?.UrunAdi</h6>
+                                <small class="text-muted">Adet: @item.Adet</small>
+                            </div>
+                            <div class="text-end fw-bold">
+                                @item.ToplamFiyat?.ToString("C2")
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+
+            @* SAĞ TARAF: BİLGİ ÖZETİ *@
+            <div class="col-lg-4">
+                <div class="card border-0 shadow-lg rounded-4 p-4 sticky-top" style="top: 100px;">
+                    <h5 class="fw-bold mb-4">Sipariş Detayı</h5>
+                    <div class="mb-3">
+                        <label class="small text-muted d-block">Müşteri</label>
+                        <span class="fw-bold">@(ilkSiparis.Kullanici?.AdSoyad ?? ilkSiparis.MisafirAdSoyad)</span>
+                    </div>
+                    <div class="mb-3">
+                        <label class="small text-muted d-block">E-posta</label>
+                        <span class="fw-bold">@(ilkSiparis.Kullanici?.Email ?? ilkSiparis.MisafirEmail)</span>
+                    </div>
+                    <hr>
+                    <a href="/Home/Index" class="btn btn-primary w-100 rounded-pill py-2">Alışverişe Devam Et</a>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+<style>
+    /* Timeline CSS */
+    .order-tracking-wrapper { display: flex; justify-content: space-between; position: relative; }
+    .order-tracking-wrapper::before { content: ''; position: absolute; top: 22px; left: 10%; right: 10%; height: 3px; background: #eee; z-index: 1; }
+    .track-step { position: relative; z-index: 2; text-align: center; width: 33%; }
+    .step-icon { width: 45px; height: 45px; background: #eee; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 10px; border: 3px solid #fff; transition: 0.3s; }
+    .track-step.active .step-icon { background: #784BA0; color: white; }
+    .track-step.active .step-text { color: #784BA0; font-weight: bold; }
+</style>

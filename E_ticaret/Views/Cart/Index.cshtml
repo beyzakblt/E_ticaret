@@ -1,22 +1,36 @@
-﻿@model IEnumerable<E_ticaret.Models.Siparisler>
-@inject EticaretContext _db
+﻿@using Microsoft.AspNetCore.Http
+@model IEnumerable<E_ticaret.Models.Siparisler>
+@inject E_ticaret.Models.EticaretContext _db
 @{
     Layout = "~/Views/Shared/_Layout.cshtml";
-    decimal? genelToplam = Model.Sum(x => x.ToplamFiyat ?? 0);
+
+    // Fiyat Hesaplamaları
+    decimal araToplam = Model.Sum(x => x.ToplamFiyat ?? 0);
+
+    // Session Bilgileri
+    int? indirimOrani = Context.Session.GetInt32("IndirimOrani");
+    string uygulananKupon = Context.Session.GetString("UygulananKupon");
+
+    // ViewBag verileri
+    var kuponListesi = ViewBag.KullaniciKuponlari as List<E_ticaret.Models.Kuponlar>;
+
+    decimal indirimTutari = indirimOrani.HasValue ? (araToplam * indirimOrani.Value / 100) : 0;
+    decimal genelToplam = araToplam - indirimTutari;
 }
 
-<div class="container py-5">
-    <div class="row">
+<div class="container py-5 mt-5">
+    <div class="row g-4">
+        @* SEPET ÜRÜN LİSTESİ *@
         <div class="col-lg-8">
             <div class="card border-0 shadow-lg rounded-4 p-4">
-                <h3 class="fw-bold mb-4"><i class="bi bi-cart3 me-2"></i>Sepetim</h3>
+                <h3 class="fw-bold mb-4"><i class="bi bi-cart3 me-2 text-primary"></i>Sepetim</h3>
 
-                @if (!Model.Any())
+                @if (Model == null || !Model.Any())
                 {
                     <div class="text-center py-5">
-                        <i class="bi bi-cart-x display-1 text-muted"></i>
+                        <i class="bi bi-cart-x display-1 text-muted opacity-25"></i>
                         <p class="mt-3 fs-5">Sepetinizde ürün bulunmuyor.</p>
-                        <a href="/" class="gradient-btn px-4 py-2 text-decoration-none">Hemen Alışverişe Başla</a>
+                        <a href="/" class="btn btn-primary rounded-pill px-5 py-2 shadow-sm text-decoration-none">Alışverişe Başla</a>
                     </div>
                 }
                 else
@@ -29,40 +43,42 @@
                                     <th>Fiyat</th>
                                     <th class="text-center">Adet</th>
                                     <th>Toplam</th>
-                                    <th>İşlem</th>
+                                    <th class="text-end">İşlem</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 @foreach (var item in Model)
                                 {
-                                    var urun = _db.Urunlers.FirstOrDefault(u => u.Id == item.UrunId);
-                                    <tr id="row-@item.UrunId">
-                                        @* ID olarak UrunId kullanıyoruz ki script ile kolay bulalım *@
+                                    var urunAdi = item.Urun?.UrunAdi ?? "Bilinmeyen Ürün";
+                                    var urunFiyat = item.Urun?.Fiyat ?? 0;
+                                    var urunFoto = _db.UrunFotos.FirstOrDefault(f => f.UrunId == item.UrunId)?.Ad ?? "/img/no-image.jpg";
+
+                                    <tr id="cart-row-@item.Id">
                                         <td>
-                                            <div class="fw-bold">@(urun?.UrunAdi ?? "Ürün Bilgisi Yok")</div>
-                                            <div class="small text-muted">@(urun?.Aciklama ?? "")</div>
+                                            <div class="d-flex align-items-center">
+                                                <img src="@urunFoto" class="rounded-3 shadow-sm me-3" style="width: 60px; height: 60px; object-fit: cover;">
+                                                <div>
+                                                    <div class="fw-bold text-dark text-truncate" style="max-width: 200px;">@urunAdi</div>
+                                                    <div class="small text-muted">ID: #@item.UrunId</div>
+                                                </div>
+                                            </div>
                                         </td>
-                                        <td>@urun?.Fiyat.ToString("C2")</td>
+                                        <td>@urunFiyat.ToString("C2")</td>
                                         <td class="text-center">
-                                            @* ARTI EKSİ BUTONLARI *@
-                                            <div class="d-flex align-items-center justify-content-center bg-light rounded-pill p-1" style="width: fit-content; margin: auto;">
-                                                <button class="btn btn-sm btn-white rounded-circle shadow-sm" onclick="sepetGuncelle(@item.UrunId, -1)">
+                                            <div class="d-flex align-items-center justify-content-center bg-light rounded-pill p-1 border shadow-sm" style="width: fit-content; margin: auto;">
+                                                <button class="btn btn-sm btn-white rounded-circle border-0 shadow-none" onclick="sepetGuncelle(@item.UrunId, -1)">
                                                     <i class="bi bi-dash"></i>
                                                 </button>
-
                                                 <span id="adet-@item.UrunId" class="mx-3 fw-bold">@item.Adet</span>
-
-                                                <button class="btn btn-sm btn-primary rounded-circle shadow-sm" onclick="sepetGuncelle(@item.UrunId, 1)">
+                                                <button class="btn btn-sm btn-white rounded-circle border-0 shadow-none" onclick="sepetGuncelle(@item.UrunId, 1)">
                                                     <i class="bi bi-plus"></i>
                                                 </button>
                                             </div>
                                         </td>
-                                        <td class="fw-bold text-primary" id="toplam-@item.UrunId">
-                                            @item.ToplamFiyat?.ToString("C2")
-                                        </td>
-                                        <td>
-                                            <button onclick="sepettenSil(@item.Id)" class="btn btn-link text-danger p-0 border-0">
-                                                <i class="bi bi-trash fs-5"></i>
+                                        <td class="fw-bold text-primary">@((item.ToplamFiyat ?? 0).ToString("C2"))</td>
+                                        <td class="text-end">
+                                            <button onclick="sepettenSil(@item.Id)" class="btn btn-outline-danger btn-sm rounded-circle shadow-none">
+                                                <i class="bi bi-trash3"></i>
                                             </button>
                                         </td>
                                     </tr>
@@ -74,56 +90,144 @@
             </div>
         </div>
 
+        @* SİPARİŞ ÖZETİ *@
         <div class="col-lg-4">
-            <div class="card border-0 shadow-lg rounded-4 p-4 bg-light">
-                <h4 class="fw-bold mb-4">Sipariş Özeti</h4>
-                <div class="d-flex justify-content-between mb-2">
+            <div class="card border-0 shadow-lg rounded-4 p-4 bg-white sticky-top" style="top: 100px;">
+                <h4 class="fw-bold mb-4 border-bottom pb-2">Sipariş Özeti</h4>
+
+                <div class="d-flex justify-content-between mb-3 text-muted">
                     <span>Ara Toplam</span>
-                    <span class="fw-bold" id="araToplam">@genelToplam?.ToString("C2")</span>
+                    <span class="fw-bold">@araToplam.ToString("C2")</span>
                 </div>
-                <hr>
+
+                @* KUPON GİRİŞ VE SEÇİM ALANI *@
+                <div class="my-4 p-3 bg-light rounded-4 border shadow-sm">
+                    <label class="small fw-bold text-muted mb-2 d-block">
+                        <i class="bi bi-ticket-perforated me-2 text-primary"></i>Kupon Kodu Uygula
+                    </label>
+                    
+                    @* MANUEL KUPON GİRİŞİ *@
+                    <div class="input-group mb-3">
+                        <input type="text" id="manualCouponCode" class="form-control border-2 shadow-none rounded-start-pill ps-3" 
+                               placeholder="Kod yazın..." value="@uygulananKupon">
+                        <button class="btn btn-dark rounded-end-pill px-3" type="button" onclick="applyManualCoupon()">Uygula</button>
+                    </div>
+
+                    @* SANA ÖZEL KUPONLAR LİSTESİ *@
+                    @if (kuponListesi != null && kuponListesi.Any())
+                    {
+                        <div class="small fw-bold text-muted mb-2">Sana Özel Kuponlar:</div>
+                        <div class="d-flex flex-column gap-2" style="max-height: 200px; overflow-y: auto;">
+                            @foreach (var kupon in kuponListesi)
+                            {
+                                bool isApplied = (uygulananKupon == kupon.KuponKodu);
+                                <div class="kupon-card p-2 rounded-3 border bg-white @(isApplied ? "border-primary shadow-sm" : "")"
+                                     onclick="applyCoupon('@kupon.KuponKodu')" style="cursor:pointer;">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <div class="fw-bold @(isApplied ? "text-primary" : "text-dark") small">@kupon.KuponKodu</div>
+                                            <div class="text-success x-small fw-bold">%@kupon.IndirimOrani İndirim</div>
+                                        </div>
+                                        @if (isApplied) { <i class="bi bi-check-circle-fill text-primary"></i> }
+                                        else { <i class="bi bi-plus-circle text-muted small"></i> }
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    }
+
+                    @if (!string.IsNullOrEmpty(uygulananKupon))
+                    {
+                        <button onclick="removeCoupon()" class="btn btn-sm btn-link text-danger w-100 mt-2 text-decoration-none small">
+                            <i class="bi bi-x-circle me-1"></i>Kuponu İptal Et
+                        </button>
+                    }
+                </div>
+
+                @if (indirimOrani.HasValue && indirimOrani > 0)
+                {
+                    <div class="d-flex justify-content-between mb-2 text-success fw-bold animate__animated animate__fadeIn">
+                        <span>İndirim (%@indirimOrani)</span>
+                        <span>- @indirimTutari.ToString("C2")</span>
+                    </div>
+                }
+
+                <hr class="opacity-25 my-3">
                 <div class="d-flex justify-content-between mb-4">
                     <span class="fw-bold fs-5">Genel Toplam</span>
-                    <span class="fw-bold fs-5 text-primary" id="genelToplam">@genelToplam?.ToString("C2")</span>
+                    <span class="fw-bold fs-5 text-primary">@genelToplam.ToString("C2")</span>
                 </div>
-                <a href="/Cart/Checkout" class="gradient-btn w-100 py-3 shadow border-0 text-center text-decoration-none">Alışverişi Tamamla</a>
+
+                <a href="/Cart/Checkout" class="gradient-btn w-100 py-3 text-center text-decoration-none rounded-pill fw-bold shadow">
+                    <i class="bi bi-credit-card me-2"></i>Ödemeye Geç
+                </a>
             </div>
         </div>
     </div>
 </div>
 
+<style>
+    .x-small { font-size: 0.75rem; }
+    .kupon-card { transition: 0.2s; border-width: 1px; }
+    .kupon-card:hover { transform: scale(1.01); border-color: #784BA0; background-color: #fdfbff !important; }
+    .kupon-card.border-primary { border-width: 2px !important; background-color: #f0f7ff !important; }
+    .gradient-btn { background: linear-gradient(135deg, #FF3CAC, #784BA0); color: white; display: block; transition: 0.3s; }
+    .gradient-btn:hover { color: white; opacity: 0.9; transform: translateY(-2px); }
+</style>
+
 @section Scripts {
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script>
-        // Ürün Adedi Güncelleme (Artı/Eksi)
+        // Sepet Adet Güncelleme
         function sepetGuncelle(urunId, degisim) {
-            $.post("/Cart/UpdateQuantity", { id: urunId, change: degisim }, function (response) {
-                if (response.success) {
-                    if (response.yeniUrunAdet <= 0) {
-                        location.reload(); // Ürün bittiyse satırı kaldırmak için yenile
-                    } else {
-                        // Sayfayı yenilemeden verileri güncelle
-                        $("#adet-" + urunId).text(response.yeniUrunAdet);
-                        $("#cartCount").text(response.toplamSepetSayisi); // Navbardaki sayı
-                        location.reload(); // Fiyat hesaplamaları için en garantisi şu anlık bu
-                    }
+            $.post("/Cart/UpdateQuantity", { id: urunId, change: degisim }, function (res) {
+                if (res.success) {
+                    location.reload();
+                } else {
+                    alert(res.message);
                 }
             });
         }
 
-        // Tamamen Silme
-               function sepettenSil(siparisId) {
-            if (confirm("Bu ürünü sepetten çıkarmak istediğinize emin misiniz?")) {
-                // Buradaki "id" ismi, Controller'daki parametre ismiyle (int id) aynı olmalı
-                $.post("/Cart/RemoveFromCart", { id: siparisId }, function (data) {
-                    if (data.success) {
-                        // Silme başarılıysa satırı anında gizle veya sayfayı yenile
-                        location.reload();
-                    } else {
-                        alert("Silme işlemi başarısız oldu.");
-                    }
-                }).fail(function() {
-                    alert("Sunucuya bağlanırken bir hata oluştu!");
+        // Ürün Silme
+        function sepettenSil(id) {
+            if (confirm("Ürünü sepetten çıkarmak istiyor musunuz?")) {
+                $.post("/Cart/RemoveFromCart", { id: id }, function (res) {
+                    if (res.success) location.reload();
+                });
+            }
+        }
+
+      // 1. Kutudan yazılan kuponu alıp sorgulayan ana tetikleyici
+function applyManualCoupon() {
+    var code = $("#manualCouponCode").val().trim(); // Kutudaki yazıyı al
+    if (code === "") {
+        alert("Lütfen bir kupon kodu girin.");
+        return;
+    }
+    // Ana sorgulama fonksiyonuna gönder
+    applyCoupon(code);
+}
+
+// 2. Hem listeden hem kutudan gelen kodu Controller'a gönderen fonksiyon
+function applyCoupon(code) {
+    // ÖNEMLİ: Controller'daki parametre adı "kod" ise burası { kod: code } olmalı
+    $.post("/Cart/KuponSorgula", { kod: code }, function (res) {
+        if (res.success) {
+            location.reload(); // Başarılıysa sayfayı yenile ki indirim yansısın
+        } else {
+            // Hata varsa mesajı alert ile göster
+            alert(res.message);
+        }
+    }).fail(function() {
+        alert("Sunucuyla iletişim kurulurken bir hata oluştu.");
+    });
+}
+
+        // Kupon İptal
+        function removeCoupon() {
+            if (confirm("Kuponu iptal etmek istiyor musunuz?")) {
+                $.post("/Cart/KuponIptal", function (res) {
+                    if (res.success) location.reload();
                 });
             }
         }

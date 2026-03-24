@@ -1,0 +1,90 @@
+﻿@model E_ticaret.Models.SiteAyarlari
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container py-5">
+    <div class="row g-5">
+        @* SOL TARAF: İLETİŞİM BİLGİLERİ (Site Ayarlarından Çekiyoruz) *@
+        <div class="col-lg-5 animate__animated animate__fadeInLeft">
+            <h2 class="fw-bold mb-4">Bizimle İletişime Geçin</h2>
+            <p class="text-muted mb-5">Her türlü soru, görüş ve önerileriniz için bize aşağıdaki kanallardan ulaşabilir veya formu doldurarak mesaj bırakabilirsiniz.</p>
+
+            <div class="d-flex mb-4 align-items-center">
+                <div class="bg-primary bg-opacity-10 p-3 rounded-circle me-3" style="width: 60px; height: 60px; display: flex; align-items: center; justify-content: center;">
+                    <i class="bi bi-geo-alt text-primary fs-4"></i>
+                </div>
+                <div>
+                    <h6 class="fw-bold mb-0">Adres</h6>
+                    <small class="text-muted">@Model?.Adres</small>
+                </div>
+            </div>
+
+            <div class="d-flex mb-4 align-items-center">
+                <div class="bg-success bg-opacity-10 p-3 rounded-circle me-3" style="width: 60px; height: 60px; display: flex; align-items: center; justify-content: center;">
+                    <i class="bi bi-telephone text-success fs-4"></i>
+                </div>
+                <div>
+                    <h6 class="fw-bold mb-0">Telefon</h6>
+                    <small class="text-muted">@Model?.Tel</small>
+                </div>
+            </div>
+
+            <div class="d-flex mb-4 align-items-center">
+                <div class="bg-info bg-opacity-10 p-3 rounded-circle me-3" style="width: 60px; height: 60px; display: flex; align-items: center; justify-content: center;">
+                    <i class="bi bi-envelope text-info fs-4"></i>
+                </div>
+                <div>
+                    <h6 class="fw-bold mb-0">E-posta</h6>
+                    <small class="text-muted">@Model?.Mail</small>
+                </div>
+            </div>
+        </div>
+
+        @* SAĞ TARAF: MESAJ FORMU *@
+        <div class="col-lg-7 animate__animated animate__fadeInRight">
+            <div class="card border-0 shadow-lg rounded-4 p-4 p-md-5">
+                <h4 class="fw-bold mb-4">Mesajınızı Bırakın</h4>
+                
+                @if (ViewBag.Success != null)
+                {
+                    <div class="alert alert-success border-0 rounded-4 shadow-sm mb-4">
+                        <i class="bi bi-check-circle-fill me-2"></i> @ViewBag.Success
+                    </div>
+                }
+                @if (ViewBag.Error != null)
+                {
+                    <div class="alert alert-danger border-0 rounded-4 shadow-sm mb-4">
+                        <i class="bi bi-exclamation-triangle-fill me-2"></i> @ViewBag.Error
+                    </div>
+                }
+
+                <form asp-controller="Home" asp-action="Contact" method="post">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="small fw-bold ms-2">Ad Soyad</label>
+                            <input type="text" name="fullName" class="form-control rounded-pill px-4" placeholder="Ad Soyad" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="small fw-bold ms-2">E-posta</label>
+                            <input type="email" name="email" class="form-control rounded-pill px-4" placeholder="E-posta Adresiniz" required>
+                        </div>
+                        <div class="col-12">
+                            <label class="small fw-bold ms-2">Konu</label>
+                            <input type="text" name="subject" class="form-control rounded-pill px-4" placeholder="Mesajınızın Konusu" required>
+                        </div>
+                        <div class="col-12">
+                            <label class="small fw-bold ms-2">Mesaj</label>
+                            <textarea name="message" class="form-control rounded-4 px-4 py-3" rows="5" placeholder="Size nasıl yardımcı olabiliriz?" required></textarea>
+                        </div>
+                        <div class="col-12 text-end">
+                            <button type="submit" class="gradient-btn border-0 px-5 py-3 rounded-pill shadow-lg fw-bold text-white">
+                                Gönder <i class="bi bi-send-fill ms-2"></i>
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

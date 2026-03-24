@@ -11,7 +11,6 @@
     <script src="https://cdn.tiny.cloud/1/423oefzqg09vxi03lb7e5j22ob07xsehtitfmn10kph04mjn/tinymce/8/tinymce.min.js" referrerpolicy="origin" crossorigin="anonymous"></script>
 
     <style>
-        /* --- CSS BAŞLANGIÇ --- */
         :root {
             --sidebar-width: 260px;
             --primary-color: #0d6efd;
@@ -37,41 +36,43 @@
             z-index: 1000;
         }
 
-        #sidebar .sidebar-header {
-            padding: 25px;
-            background: #1b1b28;
-            text-align: center;
-            color: #fff;
-            font-weight: 600;
-            letter-spacing: 1px;
-        }
+            #sidebar .sidebar-header {
+                padding: 25px;
+                background: #1b1b28;
+                text-align: center;
+                color: #fff;
+                font-weight: 600;
+                letter-spacing: 1px;
+            }
 
-        #sidebar ul { padding: 15px 0; }
+            #sidebar ul {
+                padding: 15px 0;
+            }
 
-        #sidebar ul li a {
-            padding: 12px 25px;
-            display: flex;
-            align-items: center;
-            color: #a2a3b7;
-            text-decoration: none;
-            transition: 0.3s;
-            font-size: 0.95rem;
-        }
+                #sidebar ul li a {
+                    padding: 12px 25px;
+                    display: flex;
+                    align-items: center;
+                    color: #a2a3b7;
+                    text-decoration: none;
+                    transition: 0.3s;
+                    font-size: 0.95rem;
+                }
 
-        #sidebar ul li a i {
-            font-size: 1.2rem;
-            margin-right: 15px;
-        }
+                    #sidebar ul li a i {
+                        font-size: 1.2rem;
+                        margin-right: 15px;
+                    }
 
-        #sidebar ul li a:hover, #sidebar ul li.active > a {
-            color: #fff;
-            background: #2b2b40;
-        }
+                    #sidebar ul li a:hover, #sidebar ul li.active > a {
+                        color: #fff;
+                        background: #2b2b40;
+                    }
 
-        #sidebar ul li.active > a {
-            border-left: 4px solid var(--primary-color);
-            background: #2b2b40;
-        }
+                #sidebar ul li.active > a {
+                    border-left: 4px solid var(--primary-color);
+                    background: #2b2b40;
+                }
 
         /* Ana İçerik Alanı */
         .main-wrapper {
@@ -92,7 +93,9 @@
             z-index: 999;
         }
 
-        .content-body { padding: 30px; }
+        .content-body {
+            padding: 30px;
+        }
 
         /* Kart ve Tablo Stilize */
         .card {
@@ -103,11 +106,19 @@
 
         /* Mobil Görünüm */
         @@media (max-width: 992px) {
-            #sidebar { margin-left: calc(-1 * var(--sidebar-width)); }
-            #sidebar.active { margin-left: 0; }
-            .main-wrapper { margin-left: 0; width: 100%; }
+            #sidebar {
+                margin-left: calc(-1 * var(--sidebar-width));
+            }
+
+                #sidebar.active {
+                    margin-left: 0;
+                }
+
+            .main-wrapper {
+                margin-left: 0;
+                width: 100%;
+            }
         }
-        /* --- CSS BİTİŞ --- */
     </style>
 </head>
 <body>
@@ -120,30 +131,55 @@
             <li class="@(ViewContext.RouteData.Values["Action"]?.ToString() == "Index" ? "active" : "")">
                 <a asp-controller="Admin" asp-action="Index"><i class="bi bi-grid-1x2"></i> Dashboard</a>
             </li>
-            <li><a asp-controller="Admin" asp-action="Urunler"><i class="bi bi-box-seam"></i> Ürün Yönetimi</a></li>
-            <li><a  asp-controller="Admin" asp-action="Kategoriler"><i class="bi bi-list-ul"></i> Kategoriler</a></li>
-            <li><a  asp-controller="Admin" asp-action="Kullanicilar"><i class="bi bi-list-ul"></i> Kullanicilar</a></li>
-            <li><a href="#"><i class="bi bi-receipt"></i> Siparişler</a></li>
-            <li><a href="#"><i class="bi bi-people"></i> Müşteriler</a></li>
 
             <hr class="mx-3 opacity-25">
 
-            <li class="@(ViewContext.RouteData.Values["Action"]?.ToString() == "Site_Ayarlari" ? "active" : "")">
-                <a asp-controller="Admin" asp-action="Site_Ayarlari">
-                    <i class="bi bi-gear"></i> Site Ayarları
+            <li class="@(ViewContext.RouteData.Values["Action"]?.ToString() == "Urunler" ? "active" : "")">
+                <a asp-controller="Admin" asp-action="Urunler"><i class="bi bi-box-seam"></i> Ürün Yönetimi</a>
+            </li>
+            <li class="@(ViewContext.RouteData.Values["Action"]?.ToString() == "Kategoriler" ? "active" : "")">
+                <a asp-controller="Admin" asp-action="Kategoriler"><i class="bi bi-list-ul"></i> Kategoriler</a>
+            </li>
+            <li class="@(ViewContext.RouteData.Values["Action"]?.ToString() == "Siparis_Yonetimi" ? "active" : "")">
+                <a asp-controller="Admin" asp-action="Siparis_Yonetimi"><i class="bi bi-receipt"></i> Sipariş Yönetimi</a>
+            </li>
+
+            <hr class="mx-3 opacity-25">
+
+            <li class="@(ViewContext.RouteData.Values["Action"]?.ToString() == "Kullanicilar" ? "active" : "")">
+                <a asp-controller="Admin" asp-action="Kullanicilar"><i class="bi bi-people"></i> Kullanıcılar</a>
+            </li>
+            <li class="@(ViewContext.RouteData.Values["Action"]?.ToString() == "Kullanicilar" ? "active" : "")">
+                <a asp-controller="Admin" asp-action="Yoneticiler"><i class="bi bi-people"></i> Yöneticiler</a>
+            </li>
+            <li class="@(ViewContext.RouteData.Values["Action"]?.ToString() == "MailGonder" ? "active" : "")">
+                <a asp-controller="Admin" asp-action="MailGonder"><i class="bi bi-envelope-paper-heart"></i> Toplu Mail Gönder</a>
+            </li>
+            <li class="@(ViewContext.RouteData.Values["Action"]?.ToString() == "GelenKutusu" ? "active" : "")">
+                <a asp-controller="Admin" asp-action="GelenKutusu"><i class="bi bi-chat-left-dots"></i> İletişim Mesajları</a>
+            </li>
+            <li class="@(ViewContext.RouteData.Values["Action"]?.ToString() == "Kuponlar" ? "active" : "")">
+                <a asp-controller="Admin" asp-action="Kuponlar">
+                    <i class="bi bi-ticket-detailed"></i> Kupon Yönetimi
                 </a>
             </li>
 
+            <hr class="mx-3 opacity-25">
+
+            <li class="@(ViewContext.RouteData.Values["Action"]?.ToString() == "Slider" ? "active" : "")">
+                <a asp-controller="Admin" asp-action="Slider"><i class="bi bi-images"></i> Slider Yönetimi</a>
+            </li>
+            <li class="@(ViewContext.RouteData.Values["Action"]?.ToString() == "Site_Ayarlari" ? "active" : "")">
+                <a asp-controller="Admin" asp-action="Site_Ayarlari"><i class="bi bi-gear"></i> Site Ayarları</a>
+            </li>
             <li class="@(ViewContext.RouteData.Values["Action"]?.ToString() == "Api_Ayarlari" ? "active" : "")">
-                <a asp-controller="Admin" asp-action="Api_Ayarlari">
-                    <i class="bi bi-gear"></i> Api Ayarları
-                </a>
+                <a asp-controller="Admin" asp-action="Api_Ayarlari"><i class="bi bi-shield-lock"></i> Api Ayarları</a>
             </li>
-            <li>
-                <a asp-controller="Admin" asp-action="Sozlesmeler">
-                    <i class="bi bi-gear"></i> Sozlesmeler
-                </a>
+            <li class="@(ViewContext.RouteData.Values["Action"]?.ToString() == "Sozlesmeler" ? "active" : "")">
+                <a asp-controller="Admin" asp-action="Sozlesmeler"><i class="bi bi-file-earmark-text"></i> Sözleşmeler</a>
             </li>
+
+            <hr class="mx-3 opacity-25">
 
             <li><a href="/" class="text-info"><i class="bi bi-arrow-left-circle"></i> Siteye Dön</a></li>
         </ul>
@@ -154,7 +190,7 @@
             <button type="button" id="sidebarToggle" class="btn btn-light border d-lg-none">
                 <i class="bi bi-list"></i>
             </button>
-            <h5 class="mb-0 d-none d-md-block">Yönetim Paneli</h5>
+            <h5 class="mb-0 d-none d-md-block">Admin Yönetim Paneli</h5>
 
             <div class="dropdown">
                 <a href="#" class="d-flex align-items-center text-decoration-none dropdown-toggle text-dark" data-bs-toggle="dropdown">
@@ -164,7 +200,7 @@
                 <ul class="dropdown-menu dropdown-menu-end shadow border-0">
                     <li><a class="dropdown-item" href="#"><i class="bi bi-person me-2"></i> Profilim</a></li>
                     <li><hr class="dropdown-divider"></li>
-                    <li><a class="dropdown-item text-danger" href="#"><i class="bi bi-box-arrow-right me-2"></i> Çıkış</a></li>
+                    <li><a class="dropdown-item text-danger" asp-controller="Admin" asp-action="Logout"><i class="bi bi-box-arrow-right me-2"></i> Çıkış Yap</a></li>
                 </ul>
             </div>
         </header>
@@ -174,13 +210,12 @@
         </main>
     </div>
 
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        /* --- JS BAŞLANGIÇ --- */
         document.getElementById('sidebarToggle').addEventListener('click', function() {
             document.getElementById('sidebar').classList.toggle('active');
         });
-        /* --- JS BİTİŞ --- */
     </script>
     @await RenderSectionAsync("Scripts", required: false)
 </body>

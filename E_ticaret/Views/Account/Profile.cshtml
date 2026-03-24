@@ -1,71 +1,149 @@
 ﻿@model E_ticaret.Models.Kullanicilar
+@inject E_ticaret.Models.EticaretContext _db
 @{
     ViewData["Title"] = "Profilim";
     Layout = "~/Views/Shared/_Layout.cshtml";
+
+    // Kullanıcının kayıtlı adreslerini çekiyoruz
+    var adresler = _db.KullaniciAdresleris.Where(x => x.KullaniciId == Model.Id).ToList();
 }
 
-<div class="container py-5">
-    <div class="row justify-content-center">
-        <div class="col-lg-8">
-            <div class="card border-0 shadow-lg rounded-4 overflow-hidden">
-                <div class="gradient-btn p-4 text-white text-center">
-                    <h3 class="mb-0 fw-bold">Profil Bilgilerim</h3>
-                    <p class="small mb-0 opacity-75">Teslimat ve iletişim bilgilerinizi buradan güncelleyebilirsiniz.</p>
+<div class="container py-5 mt-5">
+    <div class="row g-4">
+        @* --- SOL MENÜ --- *@
+        <div class="col-lg-3">
+            <div class="card border-0 shadow-sm rounded-4 p-3 sticky-top" style="top: 100px;">
+                <div class="text-center py-4">
+                    <div class="bg-primary text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-3 shadow" 
+                         style="width: 80px; height: 80px; font-size: 2rem; background: linear-gradient(135deg, #FF3CAC, #784BA0) !important;">
+                        @(Model.AdSoyad?.Substring(0, 1).ToUpper() ?? "B")
+                    </div>
+                    <h5 class="fw-bold mb-0">@Model.AdSoyad</h5>
+                    <p class="small text-muted">@Model.Email</p>
+                </div>
+                <div class="nav flex-column nav-pills custom-pills" id="v-pills-tab" role="tablist">
+                    <button class="nav-link active mb-2 rounded-pill text-start" data-bs-toggle="pill" data-bs-target="#tab-profil">
+                        <i class="bi bi-person-circle me-2"></i> Kişisel Bilgiler
+                    </button>
+                    <button class="nav-link mb-2 rounded-pill text-start" data-bs-toggle="pill" data-bs-target="#tab-adresler">
+                        <i class="bi bi-geo-alt-fill me-2"></i> Kayıtlı Adreslerim
+                    </button>
+                    <a href="/Account/Orders" class="nav-link mb-2 rounded-pill text-start text-dark">
+                        <i class="bi bi-bag-check-fill me-2 text-success"></i> Siparişlerim
+                    </a>
+                    <hr>
+                    <a href="/Account/Logout" class="nav-link rounded-pill text-start text-danger">
+                        <i class="bi bi-box-arrow-right me-2"></i> Çıkış Yap
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        @* --- SAĞ İÇERİK --- *@
+        <div class="col-lg-9">
+            <div class="tab-content" id="v-pills-tabContent">
+
+                @* KİŞİSEL BİLGİLER TABI *@
+                <div class="tab-pane fade show active" id="tab-profil">
+                    <div class="card border-0 shadow-lg rounded-4 p-4 p-md-5">
+                        <h4 class="fw-bold mb-4 text-primary">Kişisel Bilgiler</h4>
+
+                        @if (TempData["Message"] != null)
+                        {
+                            <div class="alert alert-success border-0 rounded-4 shadow-sm mb-4 animate__animated animate__fadeIn">
+                                <i class="bi bi-check-circle-fill me-2"></i> @TempData["Message"]
+                            </div>
+                        }
+
+                        @* asp-controller ekleyerek yolu garantiye aldık *@
+                        <form asp-action="UpdateProfile" asp-controller="Account" method="post">
+                            <input type="hidden" asp-for="Id" />
+                            <div class="row g-4">
+                                <div class="col-md-6">
+                                    <label class="form-label small fw-bold">Ad Soyad</label>
+                                    <input asp-for="AdSoyad" type="text" class="form-control rounded-pill border-2 px-3 py-2" required>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label small fw-bold">E-posta (Değiştirilemez)</label>
+                                    <input asp-for="Email" type="email" class="form-control rounded-pill border-2 bg-light px-3 py-2" readonly>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label small fw-bold">Telefon</label>
+                                    <input asp-for="Telefon" type="tel" class="form-control rounded-pill border-2 px-3 py-2" placeholder="05xx xxx xx xx">
+                                </div>
+                                
+                                <div class="col-md-6">
+                                    <label class="form-label small fw-bold text-danger">Yeni Şifre (Değiştirmek istemiyorsanız boş bırakın)</label>
+                                    <input name="YeniSifre" type="password" class="form-control rounded-pill border-2 px-3 py-2" placeholder="********">
+                                </div>
+
+                                <div class="col-12 mt-4">
+                                    <button type="submit" class="gradient-btn border-0 px-5 py-3 shadow-lg">
+                                        Bilgileri Güncelle
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
                 </div>
 
-                <div class="card-body p-4 p-md-5">
-                    @if (TempData["Message"] != null)
-                    {
-                        <div class="alert alert-success alert-dismissible fade show rounded-pill" role="alert">
-                            <i class="bi bi-check-circle-fill me-2"></i> @TempData["Message"]
-                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                @* ADRESLER TABI *@
+                <div class="tab-pane fade" id="tab-adresler">
+                    <div class="card border-0 shadow-lg rounded-4 p-4 p-md-5">
+                        <div class="d-flex justify-content-between align-items-center mb-4">
+                            <h4 class="fw-bold mb-0 text-primary">Kayıtlı Adreslerim</h4>
+                            @* Yol hatasını önlemek için tam adres verdik *@
+                            <a href="/Account/AdresEkle" class="btn btn-outline-primary rounded-pill btn-sm px-3">
+                                <i class="bi bi-plus-lg me-1"></i> Yeni Adres Ekle
+                            </a>
                         </div>
-                    }
 
-                    <form asp-action="UpdateProfile" method="post">
-                        <div class="row g-4">
-                            <div class="col-md-6">
-                                <label class="form-label fw-semibold">Ad Soyad</label>
-                                <input asp-for="AdSoyad" type="text" class="form-control rounded-pill border-2" required>
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label fw-semibold">E-posta (Değiştirilemez)</label>
-                                <input asp-for="Email" type="email" class="form-control rounded-pill border-2 bg-light" readonly>
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label fw-semibold">Telefon</label>
-                                <input asp-for="Telefon" type="tel" class="form-control rounded-pill border-2" placeholder="05xx xxx xx xx">
-                            </div>
-
-                            <hr class="my-4 text-muted">
-                            <h5 class="fw-bold"><i class="bi bi-geo-alt me-2"></i>Teslimat Adresi</h5>
-
-                            <div class="col-12">
-                                <label class="form-label fw-semibold">Açık Adres</label>
-                                <textarea asp-for="Adres" class="form-control rounded-4 border-2" rows="3" placeholder="Mahalle, sokak, kapı no..."></textarea>
-                            </div>
-                            <div class="col-md-4">
-                                <label class="form-label fw-semibold">Şehir</label>
-                                <input asp-for="Sehir" type="text" class="form-control rounded-pill border-2">
-                            </div>
-                            <div class="col-md-4">
-                                <label class="form-label fw-semibold">İlçe</label>
-                                <input asp-for="Ilce" type="text" class="form-control rounded-pill border-2">
-                            </div>
-                            <div class="col-md-4">
-                                <label class="form-label fw-semibold">Posta Kodu</label>
-                                <input asp-for="PostaKodu" type="text" class="form-control rounded-pill border-2">
-                            </div>
-
-                            <div class="col-12 mt-5">
-                                <button type="submit" class="gradient-btn w-100 py-3 rounded-pill shadow border-0 fw-bold">
-                                    <i class="bi bi-save me-2"></i> Değişiklikleri Kaydet
-                                </button>
-                            </div>
+                        <div class="row g-3">
+                            @if (adresler != null && adresler.Any())
+                            {
+                                foreach (var adres in adresler)
+                                {
+                                    <div class="col-md-6">
+                                        <div class="p-3 border-2 border rounded-4 position-relative h-100 shadow-sm transition-hover">
+                                            @if (adres.IsDefault == true)
+                                            {
+                                                <span class="badge bg-success rounded-pill position-absolute top-0 end-0 mt-3 me-3">Varsayılan</span>
+                                            }
+                                            <h6 class="fw-bold mb-2">@adres.AdresBasligi</h6>
+                                            <p class="small mb-1 text-dark fw-semibold">@adres.AdSoyad</p>
+                                            <p class="small text-muted mb-3">@adres.TamAdres @adres.Ilce / @adres.Sehir</p>
+                                            <div class="d-flex gap-2">
+                                                <a href="/Account/AdresSil/@adres.Id" class="btn btn-sm btn-link text-danger p-0 text-decoration-none fw-bold" onclick="return confirm('Bu adresi silmek istediğinize emin misiniz?')">
+                                                    <i class="bi bi-trash3 me-1"></i>Sil
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                }
+                            }
+                            else
+                            {
+                                <div class="col-12 text-center py-5 bg-light rounded-4">
+                                    <i class="bi bi-geo-alt text-muted display-4"></i>
+                                    <p class="mt-3">Henüz kayıtlı bir adresiniz yok.</p>
+                                    <a href="/Account/AdresEkle" class="btn btn-primary rounded-pill px-4">İlk Adresini Ekle</a>
+                                </div>
+                            }
                         </div>
-                    </form>
+                    </div>
                 </div>
+
             </div>
         </div>
     </div>
 </div>
+
+<style>
+    .custom-pills .nav-link { color: #555; padding: 12px 20px; transition: 0.3s; font-weight: 500; }
+    .custom-pills .nav-link.active { background: linear-gradient(135deg, #FF3CAC, #784BA0) !important; color: white !important; box-shadow: 0 4px 15px rgba(120, 75, 160, 0.3); }
+    .custom-pills .nav-link:hover:not(.active) { background: #f8f9fa; color: #784BA0; }
+    .border-2 { border-width: 2px !important; }
+    .gradient-btn { background: linear-gradient(135deg, #FF3CAC, #784BA0); color: white; border-radius: 50px; transition: 0.3s; font-weight: 600; cursor: pointer; }
+    .gradient-btn:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(120, 75, 160, 0.4); color: white; }
+    .transition-hover:hover { border-color: #784BA0 !important; background: #fdfbff; }
+</style>

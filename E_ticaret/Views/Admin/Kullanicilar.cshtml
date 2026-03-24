@@ -10,7 +10,12 @@
             <h5 class="fw-bold mb-0 text-dark">
                 <i class="bi bi-people-fill me-2 text-primary"></i>Kayıtlı Kullanıcı Yönetimi
             </h5>
-            <span class="badge bg-primary rounded-pill px-3 py-2">Toplam: @Model.Count Üye</span>
+            <div class="d-flex gap-2">
+                <span class="badge bg-light text-primary border border-primary rounded-pill px-3 py-2 d-none d-md-inline-block">Toplam: @Model.Count Üye</span>
+                <button type="button" class="btn btn-primary rounded-pill px-4 shadow-sm" data-bs-toggle="modal" data-bs-target="#ekleModal">
+                    <i class="bi bi-person-plus-fill me-2"></i>Yeni Üye Ekle
+                </button>
+            </div>
         </div>
     </div>
 
@@ -62,6 +67,37 @@
                     }
                 </tbody>
             </table>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="ekleModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg rounded-4">
+            <form action="/Admin/KullaniciEkle" method="post">
+                <div class="modal-header border-0 bg-primary text-white rounded-top-4 p-4">
+                    <h5 class="modal-title fw-bold"><i class="bi bi-person-plus-fill me-2"></i>Yeni Kullanıcı Kaydı</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold">Ad Soyad</label>
+                        <input type="text" name="AdSoyad" class="form-control rounded-3" placeholder="Örn: Beyza Akbulut" required />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold">E-Posta Adresi</label>
+                        <input type="email" name="Email" class="form-control rounded-3" placeholder="ornek@mail.com" required />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold">Başlangıç Şifresi</label>
+                        <input type="password" name="Sifre" class="form-control rounded-3" placeholder="******" required />
+                    </div>
+                </div>
+                <div class="modal-footer border-0 p-3 bg-light rounded-bottom-4">
+                    <button type="button" class="btn btn-secondary rounded-pill px-4" data-bs-dismiss="modal">Vazgeç</button>
+                    <button type="submit" class="btn btn-primary rounded-pill px-4 shadow">Kullanıcıyı Kaydet</button>
+                </div>
+            </form>
         </div>
     </div>
 </div>

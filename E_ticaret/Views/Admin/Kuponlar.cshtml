@@ -1,0 +1,90 @@
+﻿@model IEnumerable<E_ticaret.Models.Kuponlar>
+@{
+    ViewData["Title"] = "Kupon Yönetimi";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="container-fluid pt-4 px-4">
+    <div class="row g-4">
+        <div class="col-sm-12 col-xl-4">
+            <div class="bg-white rounded-4 shadow-sm p-4 h-100">
+                <h5 class="fw-bold mb-4 text-primary"><i class="bi bi-plus-circle me-2"></i>Yeni Kupon Oluştur</h5>
+                <form asp-action="KuponEkle" method="post">
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold">Kupon Kodu</label>
+                        @* name="kod" yerine name="KuponKodu" yaptık *@
+                        <input type="text" name="KuponKodu" class="form-control rounded-3" placeholder="Örn: BAHAR20" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold">İndirim Oranı (%)</label>
+                        @* name="indirim" yerine name="IndirimOrani" *@
+                        <input type="number" name="IndirimOrani" class="form-control rounded-3" placeholder="20" min="1" max="100" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold">Kullanım Limiti (Kişi Sayısı)</label>
+                        @* name="limit" yerine name="KullanimLimiti" *@
+                        <input type="number" name="KullanimLimiti" class="form-control rounded-3" placeholder="100" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold">Bitiş Tarihi</label>
+                        @* name="bitis" yerine name="BitisTarihi" *@
+                        <input type="datetime-local" name="BitisTarihi" class="form-control rounded-3" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold text-danger">Kişiye Özel (E-posta)</label>
+                        @* Bu zaten doğru: TanimliMail *@
+                        <input type="email" name="TanimliMail" class="form-control rounded-3" placeholder="Boş bırakılırsa genel olur">
+                        <div class="form-text small">Sadece bu mail sahibi kuponu sepetinde görür.</div>
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100 rounded-pill py-2 shadow-sm">Kuponu Tanımla</button>
+                </form>
+            </div>
+        </div>
+
+        <div class="col-sm-12 col-xl-8">
+            <div class="bg-white rounded-4 shadow-sm p-4 h-100">
+                <h5 class="fw-bold mb-4 text-primary"><i class="bi bi-ticket-perforated me-2"></i>Aktif Kuponlar</h5>
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle">
+                        <thead class="bg-light small">
+                            <tr>
+                                <th>KOD</th>
+                                <th>İndirim</th>
+                                <th>Kullanım</th>
+                                <th>Bitiş</th>
+                                <th>Tip</th>
+                                <th class="text-end">İşlem</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in Model)
+                            {
+                                <tr>
+                                    <td><span class="badge bg-primary rounded-pill px-3">@item.KuponKodu</span></td>
+                                    <td class="fw-bold text-success">%@item.IndirimOrani</td>
+                                    <td class="small">@item.KullanilanAdet / @item.KullanimLimiti</td>
+                                    <td class="small">@item.BitisTarihi.ToString("dd.MM.yyyy")</td>
+                                    <td>
+                                        @if (string.IsNullOrEmpty(item.TanimliMail))
+                                        {
+                                            <span class="text-muted"><i class="bi bi-people-fill me-1"></i>Genel</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-info" title="@item.TanimliMail"><i class="bi bi-person-fill-lock me-1"></i>Özel</span>
+                                        }
+                                    </td>
+                                    <td class="text-end">
+                                        <a asp-action="KuponSil" asp-route-id="@item.Id" class="btn btn-sm btn-outline-danger border-0" onclick="return confirm('Silmek istediğine emin misin?')">
+                                            <i class="bi bi-trash"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,104 @@
+﻿@model IEnumerable<E_ticaret.Models.Yoneticiler>
+@{
+    ViewData["Title"] = "Yönetici Paneli";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="container-fluid py-4">
+    <div class="card border-0 shadow-sm rounded-4 mb-4">
+        <div class="card-body p-3 d-flex justify-content-between align-items-center">
+            <h5 class="fw-bold mb-0"><i class="bi bi-shield-lock-fill me-2 text-primary"></i>Panel Yöneticileri</h5>
+            <button class="btn btn-primary rounded-pill px-4 shadow-sm" data-bs-toggle="modal" data-bs-target="#yoneticiEkleModal">
+                <i class="bi bi-plus-lg me-2"></i>Yeni Yönetici Ekle
+            </button>
+        </div>
+    </div>
+
+    <div class="card border-0 shadow-sm rounded-4">
+        <div class="table-responsive p-3">
+            <table class="table table-hover align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th>Kullanıcı Adı</th>
+                        <th>Yetki Seviyesi (Status)</th>
+                        <th>Son Giriş</th>
+                        <th>Durum</th>
+                        <th class="text-end pe-4">İşlemler</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var y in Model)
+                    {
+                        <tr>
+                            <td class="fw-bold">@y.Users</td>
+                            <td>
+                                <span class="badge bg-light text-dark border">Seviye: @y.StatuId</span>
+                            </td>
+                            <td class="small text-muted">@y.SonGiris?.ToString("dd.MM.yyyy HH:mm")</td>
+                            <td>
+                                @if (y.IsActive == 1)
+                                {
+                                    <span class="badge bg-success-soft text-success px-3 py-2 rounded-pill">Aktif</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-danger-soft text-danger px-3 py-2 rounded-pill">Pasif</span>
+                                }
+                            </td>
+                            <td class="text-end pe-4">
+                                <a asp-action="YoneticiSil" asp-route-id="@y.Id" class="btn btn-sm btn-outline-danger rounded-pill border-0" onclick="return confirm('Bu yöneticiyi silmek istediğine emin misin?')">
+                                    <i class="bi bi-trash"></i>
+                                </a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="yoneticiEkleModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg rounded-4">
+            <form asp-action="YoneticiEkle" method="post">
+                <div class="modal-header border-0 bg-dark text-white rounded-top-4">
+                    <h5 class="modal-title fw-bold"><i class="bi bi-person-badge-fill me-2"></i>Yeni Yönetici Kaydı</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold">Yönetici Kullanıcı Adı (Email değil)</label>
+                        <input type="text" name="Users" class="form-control rounded-3" placeholder="Örn: beyza_admin" required />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold">Giriş Şifresi</label>
+                        <input type="password" name="Pass" class="form-control rounded-3" placeholder="******" required />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold">Yetki Seviyesi (Status ID)</label>
+                        <select name="StatuId" class="form-select rounded-3">
+                            <option value="1">Süper Admin (Tam Yetki)</option>
+                            <option value="2">Editör (Sadece Ürün/Kategori)</option>
+                            <option value="3">Destek (Sadece Mesaj/İade)</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer border-0 p-3 bg-light rounded-bottom-4">
+                    <button type="button" class="btn btn-secondary rounded-pill px-4" data-bs-dismiss="modal">Vazgeç</button>
+                    <button type="submit" class="btn btn-primary rounded-pill px-4 shadow">Yöneticiyi Oluştur</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<style>
+    .bg-success-soft {
+        background-color: rgba(25, 135, 84, 0.1);
+    }
+
+    .bg-danger-soft {
+        background-color: rgba(220, 53, 69, 0.1);
+    }
+</style>

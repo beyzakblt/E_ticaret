@@ -1,32 +1,48 @@
 ﻿@{
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
-
-<div class="container py-5">
+<div class="container py-5 mt-5">
     <div class="row justify-content-center">
         <div class="col-md-5">
-            <div class="card border-0 shadow-lg rounded-4 p-4">
-                <h3 class="fw-bold text-center mb-4">Giriş Yap</h3>
+            <div class="card border-0 shadow-lg rounded-4 p-4 p-md-5 animate__animated animate__fadeIn">
+                <h3 class="fw-bold text-center mb-4 text-primary">Giriş Yap</h3>
 
                 @if (ViewBag.Error != null)
                 {
-                    <div class="alert alert-danger py-2 small">@ViewBag.Error</div>
+                    <div class="alert alert-danger border-0 rounded-pill py-2 small mb-3">
+                        <i class="bi bi-exclamation-circle me-2"></i>@ViewBag.Error
+                    </div>
+                }
+
+                @if (TempData["Message"] != null)
+                {
+                    <div class="alert alert-success border-0 rounded-pill py-2 small mb-3">
+                        <i class="bi bi-check-circle me-2"></i>@TempData["Message"]
+                    </div>
                 }
 
                 <form action="/Account/Login" method="post">
                     <div class="mb-3 text-start">
-                        <label class="fw-bold small">E-Posta</label>
-                        <input type="email" name="email" class="form-control rounded-pill border-2" placeholder="ornek@mail.com" required />
+                        <label class="fw-bold small ms-2">E-Posta</label>
+                        <input type="email" name="email" class="form-control rounded-pill border-2 px-3" placeholder="ornek@mail.com" required />
                     </div>
-                    <div class="mb-3 text-start">
-                        <label class="fw-bold small">Şifre</label>
-                        <input type="password" name="sifre" class="form-control rounded-pill border-2" placeholder="******" required />
+                    
+                    <div class="mb-2 text-start">
+                        <label class="fw-bold small ms-2">Şifre</label>
+                        <input type="password" name="sifre" class="form-control rounded-pill border-2 px-3" placeholder="******" required />
                     </div>
-                    <button type="submit" class="btn btn-primary w-100 rounded-pill py-2 shadow fw-bold">Giriş Yap</button>
+
+                    @* --- ŞİFREMİ UNUTTUM LİNKİ BURADA --- *@
+                    <div class="text-end mb-4">
+                        <a href="/Account/ForgotPassword" class="text-muted small text-decoration-none fw-semibold hover-primary">
+                            Şifremi Unuttum?
+                        </a>
+                    </div>
+
+                    <button type="submit" class="gradient-btn w-100 border-0 shadow-lg py-3 fw-bold">Giriş Yap</button>
                 </form>
 
-                @* REGISTER BAĞLANTISI BURADA *@
-                <div class="text-center mt-4">
+                <div class="text-center mt-4 pt-2 border-top">
                     <p class="text-muted small">
                         Henüz üye değil misiniz?
                         <a href="/Account/Register" class="text-primary fw-bold text-decoration-none ms-1">Hemen Kayıt Ol</a>
@@ -36,3 +52,20 @@
         </div>
     </div>
 </div>
+
+<style>
+    .border-2 { border-width: 2px !important; }
+    .hover-primary:hover { color: #784BA0 !important; text-decoration: underline !important; }
+    
+    .gradient-btn {
+        background: linear-gradient(135deg, #FF3CAC, #784BA0);
+        color: white;
+        border-radius: 50px;
+        transition: 0.3s;
+    }
+    .gradient-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 20px rgba(120, 75, 160, 0.3);
+        color: white;
+    }
+</style>

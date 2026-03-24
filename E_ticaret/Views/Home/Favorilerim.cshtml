@@ -1,0 +1,154 @@
+﻿@model IEnumerable<E_ticaret.Models.Urunler>
+@inject EticaretContext _db
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewData["Title"] = "Favorilerim";
+    var userIdString = Context.Session.GetString("UserId");
+}
+
+<div class="container py-5">
+    <div class="d-flex justify-content-between align-items-center mb-5">
+        <h3 class="fw-bold mb-0">
+            <i class="bi bi-heart-fill text-danger me-2"></i>Favorilerim
+        </h3>
+        <span class="badge bg-white text-dark border shadow-sm px-4 py-2 rounded-pill fw-semibold">
+            Toplam <span id="fav-page-count">@Model.Count()</span> Ürün
+        </span>
+    </div>
+
+    @if (!Model.Any())
+    {
+        <div class="text-center py-5 shadow-sm rounded-4 bg-light border border-dashed">
+            <div class="mb-4">
+                <i class="bi bi-heartbreak text-muted opacity-50" style="font-size: 5rem;"></i>
+            </div>
+            <h4 class="fw-bold">Favori listeniz şu an boş</h4>
+            <a href="/" class="gradient-btn mt-3 px-5 py-3 shadow-lg text-decoration-none">Alışverişe Devam Et</a>
+        </div>
+    }
+    else
+    {
+        <div class="row g-4" id="favori-listesi">
+            @foreach (var urun in Model)
+            {
+                // SEPETTEKİ MEVCUT ADEDİ ÇEKİYORUZ (Hatanın çözümü burada)
+                int sepetAdet = 0;
+                if (!string.IsNullOrEmpty(userIdString))
+                {
+                    int uId = int.Parse(userIdString);
+                    sepetAdet = _db.Siparislers.FirstOrDefault(x => x.KullaniciId == uId && x.UrunId == urun.Id && x.Durum == "Sepette")?.Adet ?? 0;
+                }
+
+                <div class="col-md-3" id="fav-card-@urun.Id">
+                    <div class="card border-0 shadow-sm rounded-4 overflow-hidden h-100 product-card position-relative">
+
+                        @* ÜRÜN SİLME (ÇARPI) BUTONU *@
+                        <button onclick="favoridenKaldir(@urun.Id)" class="btn btn-sm btn-danger rounded-circle position-absolute"
+                                style="top: 10px; right: 10px; z-index: 15; width: 30px; height: 30px; padding: 0; border: none; opacity: 0.8;">
+                            <i class="bi bi-x-lg" style="font-size: 0.8rem;"></i>
+                        </button>
+
+                        @* ÜRÜN GÖRSELİ *@
+                        <a href="/Home/UrunDetay/@urun.Id" class="d-block p-3">
+                            @{
+                                var foto = _db.UrunFotos.FirstOrDefault(x => x.UrunId == urun.Id)?.Ad ?? "https://picsum.photos/400/500?product=" + urun.Id;
+                            }
+                            <img src="@foto" class="card-img-top rounded-4" alt="@urun.UrunAdi" style="height: 180px; object-fit: contain;">
+                        </a>
+
+                        <div class="card-body p-4 pt-0">
+                            <a href="/Home/UrunDetay/@urun.Id" class="text-decoration-none text-dark">
+                                <h6 class="fw-bold text-truncate">@urun.UrunAdi</h6>
+                            </a>
+                            <p class="text-primary fw-bold fs-5 mb-3">@urun.Fiyat.ToString("C2")</p>
+
+                            @* SEPET GÜNCELLEME ALANI (ARTI-EKSİ) *@
+                            <div class="d-flex align-items-center justify-content-between bg-light rounded-pill p-1 shadow-sm border mb-3">
+                                <button class="btn btn-sm btn-white rounded-circle shadow-sm" onclick="sepetGuncelle(@urun.Id, -1)">
+                                    <i class="bi bi-dash"></i>
+                                </button>
+
+                                <span id="adet-@urun.Id" class="fw-bold px-2">@sepetAdet</span>
+
+                                <button class="btn btn-sm btn-primary rounded-circle shadow-sm" onclick="sepetGuncelle(@urun.Id, 1)">
+                                    <i class="bi bi-plus"></i>
+                                </button>
+                            </div>
+
+                            <div class="d-grid gap-2">
+                                <a href="/Home/UrunDetay/@urun.Id" class="btn btn-outline-secondary btn-sm rounded-pill border-0">
+                                    Ürünü İncele
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>
+
+<style>
+    .product-card {
+        transition: all 0.3s ease;
+    }
+
+        .product-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 12px 25px rgba(0,0,0,0.1) !important;
+        }
+
+    .border-dashed {
+        border-style: dashed !important;
+        border-width: 2px !important;
+    }
+
+    .btn-white {
+        background: white;
+        border: none;
+    }
+</style>
+
+@section Scripts {
+    <script>
+        // 1. SEPET GÜNCELLEME FONKSİYONU
+        function sepetGuncelle(urunId, degisim) {
+            $.post("/Cart/UpdateQuantity", { id: urunId, change: degisim }, function (response) {
+                if (response.success) {
+                    // Karttaki adet sayısını güncelle
+                    $("#adet-" + urunId).text(response.yeniUrunAdet);
+
+                    // Navbar'daki toplam sepet sayısını güncelle
+                    $("#cartCount").text(response.toplamSepetSayisi);
+
+                    // Görsel bildirim (parlama efekti)
+                    $("#cartCount").fadeOut(100).fadeIn(100);
+                } else {
+                    window.location.href = "/Account/Login";
+                }
+            });
+        }
+
+        // 2. FAVORİDEN KALDIRMA VE NAVBAR GÜNCELLEME
+        function favoridenKaldir(id) {
+            $.post("/Home/FavoriIslem", { urunId: id }, function (res) {
+                if (res.success) {
+                    $("#fav-card-" + id).fadeOut(300, function() {
+                        $(this).remove();
+                        if ($("#favori-listesi .col-md-3").length === 0) {
+                            location.reload();
+                        }
+                    });
+
+                    // NAVBARDAKİ FAVORİ SAYISINI GÜNCELLE (SİYAH BADGE)
+                    let favBadge = $(".nav-icon-badge.bg-dark");
+                    let currentFavCount = parseInt(favBadge.first().text()) || 0;
+                    if (currentFavCount > 0) {
+                        favBadge.text(currentFavCount - 1);
+                        $("#fav-page-count").text(currentFavCount - 1);
+                    }
+                }
+            });
+        }
+    </script>
+}

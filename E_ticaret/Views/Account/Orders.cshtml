@@ -3,81 +3,158 @@
 @{
     ViewData["Title"] = "Siparişlerim";
     Layout = "~/Views/Shared/_Layout.cshtml";
+    
+    // ViewBag'den ürünleri alıyoruz
+    var urunListesi = ViewBag.Urunler as List<E_ticaret.Models.Urunler>;
+    string[] yasakliDurumlar = { "Kargoya Verildi", "Teslim Edildi", "İptal Edildi", "İade Talebi Oluşturuldu", "İade Onaylandı" };
 }
 
-<div class="container py-5">
-    <div class="row">
-        <div class="col-lg-10 mx-auto">
-            <div class="card border-0 shadow-lg rounded-4 p-4">
-                <h3 class="fw-bold mb-4"><i class="bi bi-box-seam me-2 text-primary"></i>Sipariş Geçmişim</h3>
+<div class="container py-5 mt-5">
+    <div class="card border-0 shadow-lg rounded-4 p-4">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h3 class="fw-bold mb-0 text-primary">
+                <i class="bi bi-box-seam-fill me-2"></i>Sipariş Geçmişim
+            </h3>
+            <a href="/" class="btn btn-outline-primary btn-sm rounded-pill px-3">Alışverişe Devam Et</a>
+        </div>
 
-                @if (!Model.Any())
-                {
-                    <div class="text-center py-5">
-                        <i class="bi bi-bag-x display-1 text-muted"></i>
-                        <p class="mt-3 fs-5 text-muted">Henüz hiç sipariş vermemişsiniz.</p>
-                        <a href="/" class="gradient-btn px-4 py-2 text-decoration-none">Alışverişe Başla</a>
-                    </div>
-                }
-                else
-                {
-                    <div class="table-responsive">
-                        <table class="table table-hover align-middle">
-                            <thead class="table-light">
-                                <tr>
-                                    <th>Sipariş Tarihi</th>
-                                    <th>Ürün Bilgisi</th>
-                                    <th>Adet</th>
-                                    <th>Toplam Tutar</th>
-                                    <th>Durum</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @foreach (var item in Model)
-                                {
-                                    var urun = _db.Urunlers.FirstOrDefault(u => u.Id == item.UrunId);
-                                    <tr>
-                                        <td>
-                                            <div class="fw-bold">@item.SiparisTarihi?.ToString("dd MMMM yyyy")</div>
-                                            <small class="text-muted">@item.SiparisTarihi?.ToString("HH:mm")</small>
-                                        </td>
-                                        <td>
-                                            <div class="d-flex align-items-center">
-                                                <div class="fw-bold">@(urun?.UrunAdi ?? "Bilinmeyen Ürün")</div>
-                                            </div>
-                                        </td>
-                                        <td>@item.Adet Adet</td>
-                                        <td class="fw-bold text-primary">@item.ToplamFiyat?.ToString("C2")</td>
-                                        <td>
-                                            @* Duruma göre farklı renklerde badge gösteriyoruz *@
-                                            @if (item.Durum == "Sipariş Alındı")
-                                            {
-                                                <span class="badge bg-info text-dark rounded-pill px-3">Sipariş Alındı</span>
-                                            }
-                                            else if (item.Durum == "Hazırlanıyor")
-                                            {
-                                                <span class="badge bg-warning text-dark rounded-pill px-3">Hazırlanıyor</span>
-                                            }
-                                            else if (item.Durum == "Kargoya Verildi")
-                                            {
-                                                <span class="badge bg-primary rounded-pill px-3">Kargoda</span>
-                                            }
-                                            else if (item.Durum == "Teslim Edildi")
-                                            {
-                                                <span class="badge bg-success rounded-pill px-3">Teslim Edildi</span>
-                                            }
-                                            else
-                                            {
-                                                <span class="badge bg-secondary rounded-pill px-3">@item.Durum</span>
-                                            }
-                                        </td>
-                                    </tr>
-                                }
-                            </tbody>
-                        </table>
-                    </div>
-                }
+        @if (TempData["OrderSuccess"] != null)
+        {
+            <div class="alert alert-success border-0 rounded-4 mb-4 animate__animated animate__fadeIn">
+                <i class="bi bi-check-circle me-2"></i>@TempData["OrderSuccess"]
             </div>
+        }
+
+        @if (TempData["Message"] != null)
+        {
+            <div class="alert alert-info border-0 rounded-4 mb-4">@TempData["Message"]</div>
+        }
+
+        <div class="table-responsive">
+            <table class="table align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th>Ürün Bilgisi</th>
+                        <th>Sipariş No</th>
+                        <th>Toplam Tutar</th>
+                        <th>Durum</th>
+                        <th class="text-end">İşlemler</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (!Model.Any())
+                    {
+                        <tr>
+                            <td colspan="5" class="text-center py-5 text-muted">
+                                <i class="bi bi-cart-x display-4 d-block mb-3"></i>
+                                Henüz bir siparişiniz bulunmuyor.
+                            </td>
+                        </tr>
+                    }
+                    else
+                    {
+                        @foreach (var item in Model)
+                        {
+                            var urun = urunListesi?.FirstOrDefault(u => u.Id == item.UrunId);
+                            var urunFoto = _db.UrunFotos.FirstOrDefault(f => f.UrunId == item.UrunId)?.Ad ?? "/img/no-image.jpg";
+
+                            <tr>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <img src="@urunFoto" class="rounded-3 shadow-sm me-3" style="width: 50px; height: 50px; object-fit: cover;">
+                                        <div>
+                                            <div class="fw-bold">@(urun?.UrunAdi ?? "Ürün Detayı Alınamadı")</div>
+                                            <small class="text-muted">Adet: @item.Adet</small>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <span class="badge bg-light text-dark border rounded-pill px-2">
+                                        #@(string.IsNullOrEmpty(item.SiparisNo) ? item.Id.ToString() : item.SiparisNo)
+                                    </span>
+                                </td>
+                                <td class="fw-bold text-primary">@item.ToplamFiyat?.ToString("C2")</td>
+                                <td>
+                                    @{
+                                        string bgClass = item.Durum switch
+                                        {
+                                            "Teslim Edildi" => "bg-success text-white",
+                                            "İptal Edildi" => "bg-danger text-white",
+                                            "Kargoya Verildi" => "bg-info text-white",
+                                            _ => "bg-warning text-dark"
+                                        };
+                                    }
+                                    <span class="badge @bgClass rounded-pill px-3 py-2" style="font-size: 0.75rem;">@item.Durum</span>
+                                </td>
+                                <td class="text-end">
+                                    <div class="d-flex justify-content-end gap-2">
+                                        @* --- FATURA BUTONU (Yeni Eklendi) --- *@
+                                        @if (!string.IsNullOrEmpty(item.SiparisNo))
+                                        {
+                                            <a href="/Cart/FaturaDetay?siparisNo=@item.SiparisNo" target="_blank"
+                                                   class="btn btn-sm btn-light border rounded-pill px-3 shadow-sm" title="Faturayı Gör">
+                                                <i class="bi bi-file-earmark-pdf text-danger"></i> Fatura
+                                            </a>
+                                        }
+
+                                        @if (item.Durum == "Teslim Edildi")
+                                        {
+                                            <button class="btn btn-sm btn-outline-danger rounded-pill px-3"
+                                                    onclick="iadeModalAc(@item.Id, '@(urun?.UrunAdi ?? "Ürün")')">
+                                                İade Et
+                                            </button>
+                                        }
+                                        else if (!yasakliDurumlar.Contains(item.Durum))
+                                        {
+                                            <form asp-action="SiparisIptal" asp-controller="Account" method="post" class="d-inline">
+                                                <input type="hidden" name="id" value="@item.Id" />
+                                                <button type="submit" class="btn btn-sm btn-outline-secondary rounded-pill px-3"
+                                                        onclick="return confirm('Siparişi iptal etmek istediğinize emin misiniz?')">
+                                                    İptal
+                                                </button>
+                                            </form>
+                                        }
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
         </div>
     </div>
 </div>
+
+@* --- İADE MODAL --- *@
+<div class="modal fade" id="iadeModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 rounded-4">
+            <div class="modal-header border-0 pb-0">
+                <h5 class="fw-bold"><i class="bi bi-arrow-return-left me-2 text-danger"></i>İade Talebi Oluştur</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form asp-action="IadeKaydet" asp-controller="Account" method="post">
+                <div class="modal-body">
+                    <p id="iadeUrunBilgi" class="small text-muted mb-3 bg-light p-2 rounded-3"></p>
+                    <input type="hidden" name="siparisId" id="iadeSiparisId" />
+                    <label class="small fw-bold mb-2">İade Nedeni</label>
+                    <textarea name="neden" class="form-control rounded-3" rows="4"
+                              placeholder="Ürünü neden iade etmek istiyorsunuz? (Kusurlu ürün, yanlış beden vb.)" required></textarea>
+                </div>
+                <div class="modal-footer border-0">
+                    <button type="submit" class="btn btn-danger w-100 rounded-pill py-2 shadow-sm fw-bold">Talebi Gönder</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function iadeModalAc(id, ad) {
+            $("#iadeSiparisId").val(id);
+            $("#iadeUrunBilgi").html("<i class='bi bi-info-circle me-1'></i> <strong>Ürün:</strong> " + ad);
+            new bootstrap.Modal(document.getElementById('iadeModal')).show();
+        }
+    </script>
+}

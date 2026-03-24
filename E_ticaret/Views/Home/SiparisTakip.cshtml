@@ -1,0 +1,35 @@
+﻿@{
+    ViewData["Title"] = "Sipariş Takibi";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container py-5 mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card border-0 shadow-lg rounded-4 p-4 p-md-5">
+                <div class="text-center mb-4">
+                    <i class="bi bi-truck text-primary display-1"></i>
+                    <h3 class="fw-bold">Sipariş Takibi</h3>
+                    <p class="text-muted small">Sipariş numaranızı ve e-postanızı girerek durumunu öğrenebilirsiniz.</p>
+                </div>
+
+                <form asp-controller="Home" asp-action="SiparisTakipSonuc" method="post">
+                    <div class="mb-3">
+                        <label class="fw-bold small">Sipariş Numarası</label>
+                        <input type="text" name="siparisNo" class="form-control rounded-pill border-2" placeholder="Örn: ABC123" required>
+                    </div>
+                    <div class="mb-4">
+                        <label class="fw-bold small">E-posta Adresiniz</label>
+                        <input type="email" name="email" class="form-control rounded-pill border-2" placeholder="ornek@mail.com" required>
+                    </div>
+                    <button type="submit" class="gradient-btn w-100 border-0 py-3 shadow">Sorgula</button>
+                </form>
+
+                @if (TempData["Error"] != null)
+                {
+                    <div class="alert alert-danger border-0 rounded-pill mt-3 small text-center">@TempData["Error"]</div>
+                }
+            </div>
+        </div>
+    </div>
+</div>

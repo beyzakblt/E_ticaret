@@ -1,0 +1,204 @@
+﻿@model E_ticaret.Models.Urunler
+@inject EticaretContext _db
+@{
+    ViewData["Title"] = Model.UrunAdi;
+    int sepetAdet = ViewBag.SepetAdet ?? 0;
+    
+    // Ürünün veritabanındaki tüm fotoğraflarını çekiyoruz
+    var fotolar = _db.UrunFotos.Where(x => x.UrunId == Model.Id).ToList();
+}
+
+<div class="container py-5 mt-5">
+    <div class="row g-5">
+        @* --- SOL TARAF: SLIDER VE FOTOĞRAFLAR --- *@
+        <div class="col-md-6 animate__animated animate__fadeInLeft">
+            @if (fotolar.Any())
+            {
+                @* 1. ANA BÜYÜK RESİM SLIDER *@
+                <div class="slider-for rounded-4 shadow-sm mb-3 overflow-hidden border">
+                    @foreach (var foto in fotolar)
+                    {
+                        <div class="zoom-container">
+                            <img src="@foto.Ad" class="img-fluid w-100" style="height: 550px; object-fit: contain;" alt="@Model.UrunAdi" />
+                        </div>
+                    }
+                </div>
+
+                @* 2. ALTTAKİ KÜÇÜK ÖNİZLEME RESİMLERİ (NAV) *@
+                <div class="slider-nav px-2">
+                    @foreach (var foto in fotolar)
+                    {
+                        <div class="px-2">
+                            <div class="thumbnail-wrapper rounded-3 border overflow-hidden" style="cursor: pointer; height: 80px;">
+                                <img src="@foto.Ad" class="img-fluid w-100 h-100" style="object-fit: cover;" alt="Önizleme" />
+                            </div>
+                        </div>
+                    }
+                </div>
+            }
+            else
+            {
+                <div class="rounded-4 shadow-sm border p-5 text-center bg-light">
+                    <img src="https://picsum.photos/600/700?text=Resim+Yok" class="img-fluid rounded-4 mb-3" style="max-height: 400px;" />
+                    <p class="text-muted">Bu ürüne ait fotoğraf bulunamadı.</p>
+                </div>
+            }
+        </div>
+
+        @* --- SAĞ TARAF: ÜRÜN DETAYLARI VE SATIN ALMA --- *@
+        <div class="col-md-6 animate__animated animate__fadeInRight">
+            <nav aria-label="breadcrumb" class="mb-3">
+                <ol class="breadcrumb small">
+                    <li class="breadcrumb-item"><a href="/Home/Index" class="text-decoration-none">Anasayfa</a></li>
+                    <li class="breadcrumb-item active">@Model.UrunAdi</li>
+                </ol>
+            </nav>
+
+            <h1 class="fw-bold display-5 mb-2">@Model.UrunAdi</h1>
+            
+            <div class="d-flex align-items-center gap-2 mb-4">
+                <div class="text-warning">
+                    <i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-half"></i>
+                </div>
+                <span class="text-muted small">(4.5/5 - 120 Değerlendirme)</span>
+            </div>
+
+            <div class="bg-light p-4 rounded-4 mb-4">
+                @if (Model.IndirimliFiyat > 0)
+                {
+                    <span class="text-muted text-decoration-line-through fs-5">@Model.Fiyat.ToString("C2")</span>
+                    <h2 class="text-primary fw-bold display-6">@Model.IndirimliFiyat?.ToString("C2")</h2>
+                }
+                else
+                {
+                    <h2 class="text-primary fw-bold display-6">@Model.Fiyat.ToString("C2")</h2>
+                }
+                
+                @if (Model.Adet > 0)
+                {
+                    <span class="badge bg-success-subtle text-success rounded-pill mt-2">
+                        <i class="bi bi-check-circle-fill me-1"></i> Stokta @Model.Adet adet var
+                    </span>
+                }
+                else
+                {
+                    <span class="badge bg-danger-subtle text-danger rounded-pill mt-2">Tükendi</span>
+                }
+            </div>
+
+            <p class="text-secondary lh-lg mb-5">@Model.Aciklama</p>
+
+            @* SEPET İŞLEMLERİ *@
+            @if (Model.Adet > 0)
+            {
+                <div class="d-flex align-items-center gap-3">
+                    <div class="d-flex align-items-center bg-white rounded-pill p-2 border shadow-sm">
+                        <button class="btn btn-sm btn-light rounded-circle" onclick="sepetGuncelle(@Model.Id, -1)">
+                            <i class="bi bi-dash-lg"></i>
+                        </button>
+                        <span id="adet-@Model.Id" class="mx-4 fw-bold fs-5" style="min-width: 25px; text-align: center;">@sepetAdet</span>
+                        <button class="btn btn-sm btn-primary rounded-circle" onclick="sepetGuncelle(@Model.Id, 1)">
+                            <i class="bi bi-plus-lg"></i>
+                        </button>
+                    </div>
+
+                    <button class="gradient-btn px-5 py-3 shadow-lg flex-grow-1" onclick="sepetGuncelle(@Model.Id, 1)">
+                        <i class="bi bi-bag-plus-fill me-2 fs-5"></i> Sepete Ekle
+                    </button>
+                </div>
+            }
+
+            @* EKSTRA BİLGİ KARTLARI *@
+            <div class="row g-3 mt-5 pt-4 border-top">
+                <div class="col-6">
+                    <div class="d-flex align-items-center gap-3">
+                        <i class="bi bi-truck fs-3 text-primary"></i>
+                        <small class="fw-semibold">Ücretsiz Kargo</small>
+                    </div>
+                </div>
+                <div class="col-6">
+                    <div class="d-flex align-items-center gap-3">
+                        <i class="bi bi-arrow-repeat fs-3 text-primary"></i>
+                        <small class="fw-semibold">14 Gün İade</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @* Slick Slider JS *@
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/slick-carousel@1.8.1/slick/slick.min.js"></script>
+    
+    <script>
+        $(document).ready(function(){
+            // Ana Büyük Slider
+            $('.slider-for').slick({
+                slidesToShow: 1,
+                slidesToScroll: 1,
+                arrows: false,
+                fade: true,
+                asNavFor: '.slider-nav'
+            });
+
+            // Alt Önizleme Slider
+            $('.slider-nav').slick({
+                slidesToShow: 4,
+                slidesToScroll: 1,
+                asNavFor: '.slider-for',
+                dots: false,
+                centerMode: true,
+                focusOnSelect: true,
+                arrows: true,
+                prevArrow: '<button type="button" class="slick-prev shadow"><i class="bi bi-chevron-left"></i></button>',
+                nextArrow: '<button type="button" class="slick-next shadow"><i class="bi bi-chevron-right"></i></button>'
+            });
+        });
+
+        function sepetGuncelle(urunId, degisim) {
+            $.post("/Cart/UpdateQuantity", { id: urunId, change: degisim }, function (response) {
+                if (response.success) {
+                    $("#adet-" + urunId).text(response.yeniUrunAdet);
+                    $("#cartCount").text(response.toplamSepetSayisi);
+                    $("#cartCount").fadeOut(100).fadeIn(100);
+                } else {
+                    if(response.message) alert(response.message);
+                    else window.location.href = "/Account/Login";
+                }
+            });
+        }
+    </script>
+}
+
+<style>
+    /* Slick Slider Custom Arrows */
+    .slick-prev, .slick-next {
+        background: white !important;
+        border-radius: 50% !important;
+        width: 35px !important;
+        height: 35px !important;
+        z-index: 10;
+        border: none !important;
+    }
+    .slick-prev:before, .slick-next:before { display: none; }
+    .slick-prev i, .slick-next i { color: #333; font-size: 1.2rem; }
+    
+    .slider-nav .slick-current .thumbnail-wrapper {
+        border-color: #784BA0 !important;
+        border-width: 2px !important;
+    }
+    
+    .zoom-container { cursor: zoom-in; }
+    .gradient-btn {
+        background: linear-gradient(45deg, #784BA0, #2B86C5);
+        border: none;
+        color: white;
+        border-radius: 50px;
+        transition: 0.3s;
+    }
+    .gradient-btn:hover {
+        transform: scale(1.02);
+        box-shadow: 0 10px 20px rgba(120, 75, 160, 0.3);
+    }
+</style>

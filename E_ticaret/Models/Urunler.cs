@@ -24,4 +24,8 @@ public partial class Urunler
     public int? FotoId { get; set; }
 
     public int? YorumId { get; set; }
+
+    public decimal? AlisFiyati { get; set; }
+
+    public int? KritikStok { get; set; }
 }

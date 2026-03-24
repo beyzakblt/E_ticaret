@@ -1,0 +1,11 @@
+﻿
+@{
+    ViewData["Title"] = "ExcelOku";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<form asp-action="ExcelOku" asp-controller="Admin" method="post" enctype="multipart/form-data">
+    <input type="file" name="excel" accept=".xlsx, .xls" class="form-control mb-3" required />  
+    <button type="submit" class="btn btn-primary">Excel Dosyasını Yükle</button>
+</form>
+

@@ -1,0 +1,83 @@
+﻿@model List<E_ticaret.Models.Kullanicilar>
+@{
+    ViewData["Title"] = "Mail Gönder";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml"; // Admin şablonun hangisiyse onu yaz
+}
+
+<div class="container-fluid pt-4 px-4">
+    <div class="bg-light rounded h-100 p-4 shadow-sm">
+        <h4 class="mb-4 fw-bold text-primary"><i class="bi bi-envelope-at-fill me-2"></i>Kullanıcılara Mail Gönder</h4>
+
+        @if (TempData["Mesaj"] != null)
+        {
+            <div class="alert alert-success border-0 shadow-sm rounded-3">@TempData["Mesaj"]</div>
+        }
+        @if (TempData["Hata"] != null)
+        {
+            <div class="alert alert-danger border-0 shadow-sm rounded-3">@TempData["Hata"]</div>
+        }
+
+        <form asp-action="MailGonder" method="post">
+            <div class="row g-4">
+                <div class="col-md-12">
+                    <div class="form-check form-switch mb-3">
+                        <input class="form-check-input" type="checkbox" id="tumuneGonder" name="tumuneGonder" value="true">
+                        <label class="form-check-label fw-bold" for="tumuneGonder">Tüm Kayıtlı Kullanıcılara Gönder</label>
+                    </div>
+
+                    <div id="listeAlani" class="mb-3">
+                        <label class="form-label fw-bold">Belirli Kullanıcıları Seç</label>
+                        <select name="secilenMailler" class="form-select select2" multiple style="width: 100%">
+                            @foreach (var user in ViewBag.Kullanicilar)
+                            {
+                                <option value="@user.Email">@user.AdSoyad (@user.Email)</option>
+                            }
+                        </select>
+                    </div>
+                </div>
+
+                <div class="col-md-12">
+                    <label class="form-label fw-bold">Konu</label>
+                    <input type="text" name="konu" class="form-control rounded-3" placeholder="Örn: Hafta Sonu İndirimi Başladı!" required>
+                </div>
+
+                <div class="col-md-12">
+                    <label class="form-label fw-bold">Mesaj İçeriği</label>
+                    <textarea name="mesaj" class="form-control rounded-3" rows="10" placeholder="Mesajınızı buraya yazın (HTML kullanabilirsiniz)..." required></textarea>
+                </div>
+
+                <div class="col-12">
+                    <button type="submit" class="btn btn-primary rounded-pill px-5 py-2 shadow-sm">
+                        <i class="bi bi-send-check-fill me-2"></i>Mailleri Gönder
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            // "Tümüne Gönder" seçilirse listeyi gizle
+            $('#tumuneGonder').change(function() {
+                if(this.checked) {
+                    $('#listeAlani').fadeOut();
+                } else {
+                    $('#listeAlani').fadeIn();
+                }
+            });
+        });
+                // MailGonder.cshtml içindeki script kısmına ekle
+        $(document).ready(function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const targetEmail = urlParams.get('targetEmail');
+            if (targetEmail) {
+                // URL'de mail varsa select2'de o maili otomatik seç
+                $('.select2').val(targetEmail).trigger('change');
+            }
+        });
+
+    </script>
+
+}
