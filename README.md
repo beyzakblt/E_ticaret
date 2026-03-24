@@ -82,12 +82,14 @@ Bu proje aktif olarak geliştirilmeye devam etmektedir. Mevcut altyapının üze
 
 ---
 
+
 ## 🔧 Kurulum ve Çalıştırma
 
 1. Projeyi bilgisayarınıza clone'layın.
-2. SQL Server üzerinde bir veritabanı oluşturun ve tabloları oluşturmak için gerekli sorguları çalıştırın.
-3. `appsettings.json` dosyasındaki `ConnectionStrings` alanını kendi SQL bilgilerinizle güncelleyin.
-4. Visual Studio üzerinden projeyi derleyip (Build) çalıştırın.
+2. SQL Server üzerinde bir veritabanı oluşturun.
+3. Proje klasöründeki **`Database_Script.sql`** dosyasını açın ve oluşturduğunuz veritabanı üzerinde çalıştırın (Execute).
+4. `appsettings.json` dosyasındaki `ConnectionStrings` alanını kendi SQL Server bilgilerinizle güncelleyin.
+5. Visual Studio üzerinden projeyi derleyip (Build) çalıştırın.
 
 ---
 *Bu proje, **Beyza Akbulut** tarafından modern yazılım geliştirme standartları gözetilerek bir portfolyo çalışması olarak geliştirilmiştir.*
